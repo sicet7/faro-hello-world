@@ -2,7 +2,7 @@
 
 namespace Sicet7\Faro\Config\Commands;
 
-use Sicet7\Faro\Config\ConfigContainer;
+use Sicet7\Faro\Config\ConfigMap;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,16 +14,16 @@ class ShowCommand extends Command
 {
 
     /**
-     * @var ConfigContainer
+     * @var ConfigMap
      */
-    private ConfigContainer $configContainer;
+    private ConfigMap $configMap;
 
     public function __construct(
-        ConfigContainer $configContainer,
+        ConfigMap $configMap,
         string $name = null
     ) {
         parent::__construct($name);
-        $this->configContainer = $configContainer;
+        $this->configMap = $configMap;
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
@@ -31,7 +31,7 @@ class ShowCommand extends Command
         $dumper = new CliDumper(null, 'UTF-8', AbstractDumper::DUMP_TRAILING_COMMA);
         $cloner = new VarCloner();
 
-        $dumper->dump($cloner->cloneVar($this->configContainer->getItems()));
+        $dumper->dump($cloner->cloneVar($this->configMap->readMap()));
 
         return static::SUCCESS;
     }

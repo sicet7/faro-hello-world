@@ -38,9 +38,9 @@ class Module extends AbstractModule
     public static function getDefinitions(): array
     {
         return [
-            ConfigContainer::class => create(ConfigContainer::class),
+            ConfigMap::class => create(ConfigMap::class),
             ConfigLoader::class => create(ConfigLoader::class)
-                ->constructor(get(ConfigContainer::class)),
+                ->constructor(get(ConfigMap::class)),
         ];
     }
 

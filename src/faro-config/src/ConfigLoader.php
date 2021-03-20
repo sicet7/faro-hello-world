@@ -3,30 +3,32 @@
 namespace Sicet7\Faro\Config;
 
 use Sicet7\Faro\Console\Event\ListenerInterface;
-use \RecursiveDirectoryIterator;
-use \FilesystemIterator;
-use \RecursiveIteratorIterator;
-use \SplFileInfo;
+use RecursiveDirectoryIterator;
+use FilesystemIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class ConfigLoader implements ListenerInterface
 {
     /**
-     * @var ConfigContainer
+     * @var ConfigMap
      */
-    private ConfigContainer $configContainer;
+    private ConfigMap $configMap;
 
     /**
      * ConfigLoader constructor.
-     * @param ConfigContainer $configContainer
+     * @param ConfigMap $configMap
      */
-    public function __construct(ConfigContainer $configContainer)
+    public function __construct(ConfigMap $configMap)
     {
-        $this->configContainer = $configContainer;
+        $this->configMap = $configMap;
     }
 
     /**
      * @inheritDoc
+     * @throws ConfigException
      */
     public function execute(object $event): void
     {
@@ -45,22 +47,22 @@ class ConfigLoader implements ListenerInterface
             $input = $event->getInput();
             if ($input->hasOption('config')) {
                 foreach ($input->getOption('config') as $path) {
-                    $path = match (substr($path, 0,1)) {
+                    $path = match (substr($path, 0, 1)) {
                         '/' => $path,
-                        default => realpath(getcwd() . '/' . $path),
+                    default => realpath(getcwd() . '/' . $path),
                     };
-                    if (!is_string($path)) {
-                        continue;
-                    }
-                    $conf = $this->loadConfig($path);
-                    if (!empty($conf)) {
-                        $configs = array_merge_recursive($configs, $conf);
-                    }
+                        if (!is_string($path)) {
+                            continue;
+                        }
+                        $conf = $this->loadConfig($path);
+                        if (!empty($conf)) {
+                            $configs = array_merge_recursive($configs, $conf);
+                        }
                 }
             }
         }
 
-        $this->configContainer->setItems($configs);
+        $this->configMap->buildMap($configs);
     }
 
     /**
@@ -97,19 +99,19 @@ class ConfigLoader implements ListenerInterface
             }
         }
         if (is_file($fileOrDir)) {
-            $name = explode(ConfigContainer::DELIMITER, basename($fileOrDir))[0];
+            $name = explode(ConfigMap::DELIMITER, basename($fileOrDir))[0];
             $extension = pathinfo($fileOrDir, PATHINFO_EXTENSION);
             $configs = match ($extension) {
                 'php' => require $fileOrDir,
                 'ini' => parse_ini_file($fileOrDir, true, INI_SCANNER_TYPED),
-                default => null
+            default => null
             };
 
-            if (!empty($configs)) {
-                return [
+                if (!empty($configs)) {
+                    return [
                     $name => $configs,
-                ];
-            }
+                    ];
+                }
         }
         return null;
     }

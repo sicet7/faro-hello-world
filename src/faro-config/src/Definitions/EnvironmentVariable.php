@@ -2,10 +2,10 @@
 
 namespace Sicet7\Faro\Config\Definitions;
 
-use Sicet7\Faro\Config\ConfigContainer;
-use Sicet7\Faro\Config\ConfigException;
+use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Config\Exceptions\ConfigException;
 
-class EnvironmentVariable
+class EnvironmentVariable implements VariableDefinition
 {
     private mixed $cachedValue;
 
@@ -36,19 +36,14 @@ class EnvironmentVariable
     }
 
     /**
-     * @param callable|null $reader
-     * @return false|mixed
-     * @throws ConfigException
+     * @inheritDoc
      */
-    public function resolve(callable $reader = null)
+    public function resolve(ConfigMap $configMap): mixed
     {
-        if ($this->cachedValue && !($this->cachedValue instanceof self)) {
+        if (!($this->cachedValue instanceof EnvironmentVariable)) {
             return $this->cachedValue;
         }
-
-        $reader = $reader ?? 'getenv';
-
-        $this->cachedValue = call_user_func($reader, $this->name);
+        $this->cachedValue = getenv($this->name);
 
         if ($this->cachedValue !== false) {
             return $this->cachedValue;
