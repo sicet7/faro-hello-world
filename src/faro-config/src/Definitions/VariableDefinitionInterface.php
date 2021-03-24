@@ -5,7 +5,7 @@ namespace Sicet7\Faro\Config\Definitions;
 use Sicet7\Faro\Config\ConfigMap;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
-interface VariableDefinition
+interface VariableDefinitionInterface
 {
     /**
      * @param ConfigMap $configMap

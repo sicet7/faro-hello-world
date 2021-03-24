@@ -5,7 +5,7 @@ namespace Sicet7\Faro\Config\Definitions;
 use Sicet7\Faro\Config\ConfigMap;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
-class EnvironmentVariable implements VariableDefinition
+class EnvironmentDefinition implements VariableDefinitionInterface
 {
     private mixed $cachedValue;
 
@@ -40,7 +40,7 @@ class EnvironmentVariable implements VariableDefinition
      */
     public function resolve(ConfigMap $configMap): mixed
     {
-        if (!($this->cachedValue instanceof EnvironmentVariable)) {
+        if (!($this->cachedValue instanceof EnvironmentDefinition)) {
             return $this->cachedValue;
         }
         $this->cachedValue = getenv($this->name);

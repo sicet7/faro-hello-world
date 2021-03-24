@@ -3,7 +3,7 @@
 namespace Sicet7\Faro\Config;
 
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Config\Definitions\VariableDefinition;
+use Sicet7\Faro\Config\Definitions\VariableDefinitionInterface;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 
@@ -120,7 +120,7 @@ class ConfigMap implements ContainerInterface
     protected function resolveMapVariables()
     {
         foreach ($this->map as $key => $value) {
-            if ($value instanceof VariableDefinition) {
+            if ($value instanceof VariableDefinitionInterface) {
                 $this->map[$key] = $value->resolve($this);
             }
         }
