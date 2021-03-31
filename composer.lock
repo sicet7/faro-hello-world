@@ -399,16 +399,16 @@
         },
         {
             "name": "sicet7/faro-console",
-            "version": "0.2.2.1",
+            "version": "0.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sicet7/faro-console.git",
-                "reference": "007c01b45c7e8fb633b011ce82c61308782a7e73"
+                "reference": "5666d3a49d3d9386c4f7682b64c5e3683488511d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sicet7/faro-console/zipball/007c01b45c7e8fb633b011ce82c61308782a7e73",
-                "reference": "007c01b45c7e8fb633b011ce82c61308782a7e73",
+                "url": "https://api.github.com/repos/sicet7/faro-console/zipball/5666d3a49d3d9386c4f7682b64c5e3683488511d",
+                "reference": "5666d3a49d3d9386c4f7682b64c5e3683488511d",
                 "shasum": ""
             },
             "require": {
@@ -432,9 +432,9 @@
             ],
             "support": {
                 "issues": "https://github.com/sicet7/faro-console/issues",
-                "source": "https://github.com/sicet7/faro-console/tree/0.2.2.1"
+                "source": "https://github.com/sicet7/faro-console/tree/0.2.3"
             },
-            "time": "2021-03-03T22:55:36+00:00"
+            "time": "2021-03-31T17:08:12+00:00"
         },
         {
             "name": "symfony/console",
@@ -1453,5 +1453,5 @@
         "ext-phar": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }

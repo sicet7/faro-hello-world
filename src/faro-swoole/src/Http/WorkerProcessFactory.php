@@ -2,18 +2,35 @@
 
 namespace Sicet7\Faro\Swoole\Http;
 
-class WorkerProcessFactory
-{
-    private string $workerProcessFqn;
+use Sicet7\Faro\Console\GenericFactory;
 
-    public function __construct(
-        string $workerProcessFqn
-    ) {
-        $this->workerProcessFqn = $workerProcessFqn;
+class WorkerProcessFactory extends GenericFactory
+{
+
+    /**
+     * @todo: Add config and module list as provided parameters.
+     * @inheritDoc
+     */
+    protected function getProvidedParameters(): array
+    {
+        return [];
     }
 
-    public function create(): WorkerProcessInterface
+    /**
+     * @inheritDoc
+     */
+    protected function getResolvedParameters(): array
     {
-        return new $this->workerProcessFqn();
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getClassWhitelist(): array
+    {
+        return [
+            WorkerProcessInterface::class
+        ];
     }
 }

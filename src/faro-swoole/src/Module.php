@@ -2,9 +2,15 @@
 
 namespace Sicet7\Faro\Swoole;
 
+use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Console\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
 use Sicet7\Faro\Swoole\Commands\StopCommand;
+use Sicet7\Faro\Swoole\Http\WorkerProcessFactory;
+use Sicet7\Faro\Swoole\Http\WorkerProcessInterface;
+use function DI\create;
+use function DI\factory;
+use function DI\get;
 
 class Module extends AbstractModule
 {
@@ -22,6 +28,16 @@ class Module extends AbstractModule
     public static function isEnabled(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDefinitions(): array
+    {
+        return [
+            WorkerProcessInterface::class => factory([WorkerProcessFactory::class, 'create']),
+        ];
     }
 
     /**
