@@ -8,6 +8,7 @@
         "ext-swoole": ">=4.6",
         "ext-json": "*",
         "ext-phar": "*",
+        "ext-posix": "*",
         "sicet7/faro-console": "^0.2",
         "psr/log": "^1.1",
         "symfony/var-dumper": "^5.2"

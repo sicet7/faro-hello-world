@@ -46,9 +46,8 @@ class ConfigMap implements ContainerInterface
      */
     public function get($id)
     {
-        $parsedId = $this->parseId($id);
-        if (array_key_exists($parsedId, $this->map)) {
-            return $this->map[$parsedId];
+        if ($this->has($id)) {
+            return $this->map[$this->parseId($id)];
         }
         throw new ConfigNotFoundException("Key: \"$id\" not found");
     }
