@@ -1,0 +1,36 @@
+#!/usr/bin/env php
+<?php
+$autoloadPaths = [
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../autoload.php',
+    __DIR__ . '/../autoload.php',
+    __DIR__ . '/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/vendor/autoload.php',
+];
+$loaded = false;
+foreach ($autoloadPaths as $autoload) {
+    if (file_exists($autoload)) {
+        require_once $autoload;
+        $loaded = true;
+        break;
+    }
+}
+
+if (!$loaded) {
+    throw new RuntimeException('Failed to find "autoload.php" file.');
+}
+unset($loaded);
+
+use Sicet7\Faro\Console\ModuleContainer;
+use Symfony\Component\Console\Application;
+
+$moduleLoader = ModuleContainer::getInstance();
+
+$container = $moduleLoader->buildContainer();
+
+$application = $container->get(Application::class);
+
+$application->run();

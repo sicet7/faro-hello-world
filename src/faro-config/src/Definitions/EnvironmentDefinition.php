@@ -55,6 +55,9 @@ class EnvironmentDefinition implements VariableDefinitionInterface
                 $this->name
             ));
         }
+        if ($this->defaultValue instanceof VariableDefinitionInterface) {
+            return $this->cachedValue = $this->defaultValue->resolve($configMap);
+        }
         return $this->cachedValue = $this->defaultValue;
     }
 }

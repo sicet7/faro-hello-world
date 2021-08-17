@@ -2,7 +2,7 @@
 
 namespace Sicet7\Faro\Config;
 
-use Sicet7\Faro\Console\Event\ListenerInterface;
+use Sicet7\Faro\Core\Event\ListenerInterface;
 use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use RecursiveIteratorIterator;
