@@ -6,31 +6,31 @@ use Sicet7\Faro\Config\ConfigMap;
 
 class ServerManager
 {
-    public const DEFAULT_CONFIG = [
-
-    ];
+    public const CONFIG_KEY = 'swoole';
 
     /**
-     * @var WorkerProcessFactory
+     * @var array|mixed|string
      */
-    private WorkerProcessFactory $workerProcessFactory;
+    private array $swooleConfig = [];
 
     /**
-     * @var ConfigMap
+     * ServerManager constructor.
+     * @param ConfigMap $configMap
      */
-    private ConfigMap $configMap;
-
     public function __construct(
-        WorkerProcessFactory $workerProcessFactory,
         ConfigMap $configMap
     ) {
-        $this->workerProcessFactory = $workerProcessFactory;
-        $this->configMap = $configMap;
+        if ($configMap->has(self::CONFIG_KEY)) {
+            $this->swooleConfig = $configMap->get(self::CONFIG_KEY);
+        }
     }
 
-    public function isServerRunning(): bool
+    public function runServer(string $ip, int $port)
     {
-        // TODO: Implement this method
+        $config = $this->swooleConfig;
+        // TODO: Find a way of supporting daemonized servers in the future.
+        $config['daemonize'] = 0;
+
     }
 
 }

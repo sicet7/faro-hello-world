@@ -4,11 +4,9 @@ namespace Sicet7\Faro\Swoole;
 
 use Sicet7\Faro\Console\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
-use Sicet7\Faro\Swoole\Commands\StopCommand;
-use Sicet7\Faro\Swoole\Http\WorkerProcessFactory;
-use Sicet7\Faro\Swoole\Http\WorkerProcessInterface;
+use Sicet7\Faro\Swoole\Http\ServerManager;
 
-use function DI\factory;
+use function DI\create;
 
 class Module extends AbstractModule
 {
@@ -34,7 +32,17 @@ class Module extends AbstractModule
     public static function getDefinitions(): array
     {
         return [
-            WorkerProcessInterface::class => factory([WorkerProcessFactory::class, 'create']),
+            ServerManager::class => create(ServerManager::class),
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function getDependencies(): array
+    {
+        return [
+            'config',
         ];
     }
 
@@ -45,7 +53,6 @@ class Module extends AbstractModule
     {
         return [
             'swoole:server:start' => StartCommand::class,
-            'swoole:server:stop' => StopCommand::class,
         ];
     }
 }

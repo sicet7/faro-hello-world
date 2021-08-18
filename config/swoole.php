@@ -13,7 +13,7 @@ $groupInfo = posix_getgrgid(posix_getgid());
 return [
 
     // process
-    'daemonize' => 1,
+    'daemonize' => 0,
     'user' => env('SWOOLE_USER', ($userInfo['name'] ?? 'user')),
     'group' => env('SWOOLE_GROUP', ($groupInfo['name'] ?? 'user')),
     'chroot' => val('dir.root'),

@@ -9,11 +9,11 @@ class Dispatcher implements EventDispatcherInterface
 {
 
     /**
-     * @var ListenerContainer
+     * @var ListenerContainerInterface
      */
-    private ListenerContainer $listenerContainer;
+    private ListenerContainerInterface $listenerContainer;
 
-    public function __construct(ListenerContainer $listenerContainer)
+    public function __construct(ListenerContainerInterface $listenerContainer)
     {
         $this->listenerContainer = $listenerContainer;
     }
