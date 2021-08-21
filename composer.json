@@ -18,7 +18,10 @@
         "psr/event-dispatcher": "^1.0",
         "symfony/console": "^5.1",
         "php-di/php-di": "^6.3",
-        "symfony/event-dispatcher-contracts": "^2.2"
+        "symfony/event-dispatcher-contracts": "^2.2",
+        "ilexn/swoole-convert-psr7": "^0.3.0",
+        "nyholm/psr7": "^1.4",
+        "slim/slim": "4.*"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.5",
@@ -30,12 +33,14 @@
             "Sicet7\\Faro\\Console\\": "src/faro-console/src/",
             "Sicet7\\Faro\\Web\\": "src/faro-web/src/",
             "Sicet7\\Faro\\Swoole\\": "src/faro-swoole/src/",
-            "Sicet7\\Faro\\Config\\": "src/faro-config/src/"
+            "Sicet7\\Faro\\Config\\": "src/faro-config/src/",
+            "Sicet7\\Faro\\Slim\\": "src/faro-slim/src/"
         },
         "files": [
             "src/faro-swoole/module.php",
             "src/faro-config/module.php",
-            "src/faro-config/functions.php"
+            "src/faro-config/functions.php",
+            "src/faro-slim/module.php"
         ]
     },
     "scripts": {

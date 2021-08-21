@@ -2,6 +2,9 @@
 
 namespace Sicet7\Faro\Swoole\Commands;
 
+use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Swoole\Exceptions\SwooleException;
+use Sicet7\Faro\Swoole\Http\Server\Handler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -13,6 +16,32 @@ class StartCommand extends Command
     public const DEFAULT_PORT = 5000;
 
     /**
+     * @var Handler
+     */
+    private Handler $serverHandler;
+
+    /**
+     * @var ConfigMap
+     */
+    private ConfigMap $configMap;
+
+    /**
+     * StartCommand constructor.
+     * @param Handler $serverHandler
+     * @param ConfigMap $configMap
+     * @param string|null $name
+     */
+    public function __construct(
+        Handler $serverHandler,
+        ConfigMap $configMap,
+        string $name = null
+    ) {
+        parent::__construct($name);
+        $this->serverHandler = $serverHandler;
+        $this->configMap = $configMap;
+    }
+
+    /**
      * @inheritDoc
      */
     protected function configure()
@@ -20,8 +49,7 @@ class StartCommand extends Command
         $this->addArgument(
             'ip_and_port',
             InputArgument::REQUIRED,
-            'The ip and the port that the server should listen on',
-            '0.0.0.0:' . self::DEFAULT_PORT
+            'The ip and the port that the server should listen on'
         );
     }
 
@@ -38,7 +66,9 @@ class StartCommand extends Command
         }
         $ip = $this->getIp($ipAndPort);
         $port = $this->getPort($ipAndPort);
-        $output->writeln('Hello');
+        $this->serverHandler->init($ip, $port, false);
+        $this->serverHandler->configure($this->configMap);
+        $this->serverHandler->start();
         return 0;
     }
 

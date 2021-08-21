@@ -4,7 +4,7 @@ namespace Sicet7\Faro\Swoole;
 
 use Sicet7\Faro\Console\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
-use Sicet7\Faro\Swoole\Http\ServerManager;
+use Sicet7\Faro\Swoole\Http\Server\Handler;
 
 use function DI\create;
 
@@ -32,7 +32,7 @@ class Module extends AbstractModule
     public static function getDefinitions(): array
     {
         return [
-            ServerManager::class => create(ServerManager::class),
+            Handler::class => create(Handler::class),
         ];
     }
 

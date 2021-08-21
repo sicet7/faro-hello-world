@@ -32,7 +32,7 @@ class Dispatcher implements EventDispatcherInterface
      * @param object $event
      * @return object
      */
-    public function callListeners(iterable $listeners, object $event): object
+    protected function callListeners(iterable $listeners, object $event): object
     {
         $canStop = $event instanceof StoppableEventInterface;
         foreach ($listeners as $listener) {

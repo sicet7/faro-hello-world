@@ -2,15 +2,16 @@
 
 namespace Sicet7\Faro\Web;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\EventDispatcher\StoppableEventInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
-class RequestEvent
+class RequestEvent implements StoppableEventInterface
 {
     /**
-     * @var RequestInterface
+     * @var ServerRequestInterface
      */
-    private RequestInterface $request;
+    private ServerRequestInterface $request;
 
     /**
      * @var ResponseInterface|null
@@ -19,17 +20,17 @@ class RequestEvent
 
     /**
      * RequestEvent constructor.
-     * @param RequestInterface $request
+     * @param ServerRequestInterface $request
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(ServerRequestInterface $request)
     {
         $this->request = $request;
     }
 
     /**
-     * @return RequestInterface
+     * @return ServerRequestInterface
      */
-    public function getRequest(): RequestInterface
+    public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }
@@ -48,5 +49,13 @@ class RequestEvent
     public function setResponse(ResponseInterface $response): void
     {
         $this->response = $response;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPropagationStopped(): bool
+    {
+        return ($this->response instanceof ResponseInterface);
     }
 }
