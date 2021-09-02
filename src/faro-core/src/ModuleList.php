@@ -1,6 +1,6 @@
 <?php
 
-namespace Sicet7\Faro\Web;
+namespace Sicet7\Faro\Core;
 
 class ModuleList
 {

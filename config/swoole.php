@@ -26,13 +26,13 @@ return [
     // worker
     'max_request' => 0,
 
-    // task worker
-    'task_ipc_mode' => 1,
+    // task worker to enable task workers "onTask" event needs to be handled.
+    /*'task_ipc_mode' => 1,
     'task_max_request' => 100,
     'task_tmpdir' => concat(val('dir.root'), '/var/tmp/task'),
     'task_worker_num' => 4,
     'task_enable_coroutine' => true,
-    'task_use_object' => false,
+    'task_use_object' => false,*/
 
     // logging
     'log_level' => 1,
@@ -40,9 +40,6 @@ return [
     'log_rotation' => SWOOLE_LOG_ROTATION_DAILY | SWOOLE_LOG_ROTATION_SINGLE,
     'log_date_format' => '%Y-%m-%dT%H:%M:%S%z',# ISO-8601
     'log_date_with_microseconds' => false,
-    'request_slowlog_file' => concat(val('dir.root'), '/var/log/swoole.slow.log'),
-    'request_slowlog_timeout' => 4,
-    'trace_event_worker' => true,
 
     // tcp
     'buffer_output_size' => 2 * 1024 * 1024,# 2MB
@@ -51,7 +48,6 @@ return [
     'tcp_defer_accept' => true,
     'open_tcp_keepalive' => true,
     //'open_tcp_nodelay' => false,
-    'pipe_buffer_size' => 2 * 1024 * 1024,# 2MB
     'socket_buffer_size' => 32 * 1024 * 1024,# 32MB
 
     // coroutine
@@ -62,14 +58,14 @@ return [
     // tcp server
     'heartbeat_idle_time' => 600,
     'heartbeat_check_interval' => 60,
-    'enable_delay_receive' => true,
+    'enable_delay_receive' => false,
     'enable_reuse_port' => true,
     'enable_unsafe_event' => true,
 
     // protocol
     'open_http_protocol' => true,
     'open_http2_protocol' => true,
-    'open_websocket_protocol' => true,
+    'open_websocket_protocol' => false, // Requires "onMessage" callback.
 
     // to enable & configure SSL see Swoole configuration.
 

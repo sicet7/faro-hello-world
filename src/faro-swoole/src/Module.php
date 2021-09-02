@@ -2,13 +2,14 @@
 
 namespace Sicet7\Faro\Swoole;
 
-use Sicet7\Faro\Console\AbstractModule;
+use Sicet7\Faro\Console\HasCommandDefinitions;
+use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
 use Sicet7\Faro\Swoole\Http\Server\Handler;
 
 use function DI\create;
 
-class Module extends AbstractModule
+class Module extends AbstractModule implements HasCommandDefinitions
 {
     /**
      * @inheritDoc

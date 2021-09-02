@@ -1,10 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Sicet7\Faro\Console;
 
-use DI\Container;
 use DI\ContainerBuilder;
 use DI\Invoker\FactoryParameterResolver;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
@@ -13,75 +10,39 @@ use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
+use Sicet7\Faro\Console\Event\SymfonyDispatcher;
+use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Event\Dispatcher;
 use Sicet7\Faro\Core\Event\ListenerContainer;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
-use Sicet7\Faro\Console\Event\SymfonyDispatcher;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
+use Sicet7\Faro\Core\ModuleList;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
-
 use function DI\create;
 use function DI\get;
 
-class ModuleContainer
+class ModuleContainer extends BaseModuleContainer
 {
-    private static ?ModuleContainer $instance = null;
-
     /**
-     * @return ModuleContainer
-     */
-    public static function getInstance(): ModuleContainer
-    {
-        if (!(static::$instance instanceof ModuleContainer)) {
-            static::$instance = new static();
-        }
-        return static::$instance;
-    }
-
-    /**
-     * @param string $moduleFqn
+     * @param array $customDefinitions
+     * @return ContainerInterface
      * @throws ModuleException
      */
-    public static function registerModule(string $moduleFqn): void
+    public static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
-        static::getInstance()->addModule($moduleFqn);
-    }
-
-    /**
-     * Should be a class which the ContainerBuilder
-     *
-     * @var string
-     */
-    protected string $containerClass = Container::class;
-
-    /**
-     * @var ContainerBuilder
-     */
-    private ContainerBuilder $containerBuilder;
-
-    /**
-     * @var CommandFactoryMapper
-     */
-    private CommandFactoryMapper $commandFactoryMapper;
-
-    /**
-     * @var ModuleLoader[]
-     */
-    private array $moduleList = [];
-
-    /**
-     * ModuleContainer constructor.
-     */
-    public function __construct()
-    {
-        $this->commandFactoryMapper = new CommandFactoryMapper();
-        $this->containerBuilder = new ContainerBuilder($this->containerClass);
-        $this->containerBuilder->useAutowiring(false);
-        $this->containerBuilder->useAnnotations(false);
-        $this->containerBuilder->addDefinitions([
+        $loadedModules = [];
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->useAutowiring(false);
+        $containerBuilder->useAnnotations(false);
+        foreach (self::getModuleList() as $moduleName => $moduleFqn) {
+            self::loadModule($moduleFqn, $containerBuilder, $loadedModules);
+        }
+        $containerBuilder->addDefinitions([
+            ModuleList::class => new ModuleList($loadedModules),
             CommandFactory::class => create(CommandFactory::class)
                 ->constructor(create(ResolverChain::class)
                     ->constructor([
@@ -109,134 +70,117 @@ class ModuleContainer
                 return $app;
             },
         ]);
-    }
 
-    /**
-     * @return ContainerBuilder
-     */
-    public function getContainerBuilder(): ContainerBuilder
-    {
-        return $this->containerBuilder;
-    }
+        $commandFactoryMapper = new CommandFactoryMapper();
 
-    /**
-     * @return CommandFactoryMapper
-     */
-    public function getCommandFactoryMapper(): CommandFactoryMapper
-    {
-        return $this->commandFactoryMapper;
-    }
-
-    /**
-     * @param ContainerInterface $container
-     * @throws ModuleException
-     */
-    protected function setupModules(ContainerInterface $container)
-    {
-        do {
-            $setupCount = 0;
-            foreach ($this->getList() as $loader) {
-                if (!$loader->isEnabled() || $loader->isSetup()) {
-                    continue;
+        foreach ($loadedModules as $moduleName => $moduleFqn) {
+            if (is_subclass_of($moduleFqn, HasCommandDefinitions::class)) {
+                $commandDefinitions = $moduleFqn::getCommandDefinitions();
+                foreach ($commandDefinitions as $commandName => $commandFqn) {
+                    if (!is_string($commandName)) {
+                        throw new ModuleException(
+                            'Failed to determine command name for command: "' . $commandFqn . '"'
+                        );
+                    }
+                    if (array_key_exists($commandName, $commandFactoryMapper->getMap())) {
+                        throw new ModuleException(
+                            "Command name collision. Command \"$commandName\" already exists."
+                        );
+                    }
+                    $containerBuilder->addDefinitions([
+                        $commandFqn => $commandFactoryMapper->mapCommand($commandName, $commandFqn),
+                    ]);
                 }
-                if (!$loader->isSetup()) {
-                    $loader->setup($container);
-                    $setupCount++;
-                }
-            }
-        } while ($setupCount !== 0);
-
-        foreach ($this->getList() as $loader) {
-            if ($loader->isEnabled() && !$loader->isSetup()) {
-                throw new ModuleException("Module setup failed for module: {$loader->getModuleFqn()}");
-            }
-        }
-    }
-
-    /**
-     * @param string $moduleFqn
-     * @throws ModuleException
-     */
-    public function addModule(string $moduleFqn): void
-    {
-        $moduleLoader = $this->createLoader($moduleFqn);
-        if ($moduleLoader->isEnabled()) {
-            $this->moduleList[$moduleLoader->getName()] = $moduleLoader;
-        }
-    }
-
-    /**
-     * Creates the loader for the modules.
-     *
-     * @param string $moduleFqn
-     * @return ModuleLoader
-     * @throws ModuleException
-     */
-    protected function createLoader(string $moduleFqn): ModuleLoader
-    {
-        return new ModuleLoader($moduleFqn);
-    }
-
-    /**
-     * @return ModuleLoader[]
-     */
-    public function getList(): array
-    {
-        return $this->moduleList;
-    }
-
-    /**
-     * @return ContainerInterface
-     * @throws ModuleException
-     */
-    public function buildContainer(): ContainerInterface
-    {
-        try {
-            $this->loadDefinitions();
-            $container = $this->getContainerBuilder()->build();
-            $this->setupModules($container);
-            return $container;
-        } catch (\Exception $exception) {
-            if ($exception instanceof ModuleException) {
-                throw $exception;
-            }
-            throw new ModuleException($exception, $exception->getCode(), $exception);
-        }
-    }
-
-    /**
-     * @throws ModuleException
-     */
-    protected function loadDefinitions()
-    {
-        do {
-            $actionCount = 0;
-            foreach ($this->getList() as $loader) {
-                if (!$loader->isEnabled() || $loader->isLoaded()) {
-                    continue;
-                }
-
-                if (!$loader->isDependenciesResolved()) {
-                    $loader->resolveDependencies($this->getList());
-                    $actionCount++;
-                }
-
-                if (!$loader->isLoaded() && $loader->isDependenciesLoaded()) {
-                    $loader->load($this->getContainerBuilder(), $this->getCommandFactoryMapper());
-                    $actionCount++;
-                }
-            }
-        } while ($actionCount !== 0);
-
-        foreach ($this->getList() as $loader) {
-            if ($loader->isEnabled() && !$loader->isLoaded()) {
-                throw new ModuleException("Failed to load module: {$loader->getModuleFqn()}");
             }
         }
 
-        $this->getContainerBuilder()->addDefinitions([
+        $containerBuilder->addDefinitions([
             CommandLoaderInterface::class => create(ContainerCommandLoader::class)
-                ->constructor(get(ContainerInterface::class), $this->getCommandFactoryMapper()->getMap()),
+                ->constructor(get(ContainerInterface::class), $commandFactoryMapper->getMap()),
         ]);
+
+        if (!empty($customDefinitions)) {
+            $containerBuilder->addDefinitions($customDefinitions);
+        }
+
+        $container = $containerBuilder->build();
+        $setupModules = [];
+        foreach ($loadedModules as $loadedModule) {
+            self::setupModule($loadedModule, $container, $setupModules);
+        }
+        return $container;
+    }
+
+    /**
+     * @param string $moduleFqn
+     * @param ContainerBuilder $builder
+     * @param array $loadedModules
+     * @param string|null $initialFqn
+     * @throws ModuleException
+     */
+    private static function loadModule(
+        string $moduleFqn,
+        ContainerBuilder $builder,
+        array &$loadedModules,
+        ?string $initialFqn = null
+    ): void {
+        $moduleList = self::getModuleList();
+        /** @var AbstractModule $moduleFqn */
+        if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $loadedModules)) {
+            return;
+        }
+        if ($initialFqn !== null && $moduleFqn == $initialFqn) {
+            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
+        }
+        foreach ($moduleFqn::getDependencies() as $dependency) {
+            if (!array_key_exists($dependency, $moduleList)) {
+                throw new ModuleException(
+                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
+                );
+            }
+            $dependencyFqn = $moduleList[$dependency];
+            /** @var AbstractModule $dependencyFqn */
+            self::loadModule($dependencyFqn, $builder, $loadedModules, $moduleFqn);
+        }
+        $definitions = $moduleFqn::getDefinitions();
+        if (!empty($definitions)) {
+            $builder->addDefinitions($definitions);
+        }
+        $loadedModules[$moduleFqn::getName()] = $moduleFqn;
+    }
+
+    /**
+     * @param string $moduleFqn
+     * @param ContainerInterface $container
+     * @param array $setupModules
+     * @param string|null $initialFqn
+     * @throws ModuleException
+     */
+    private static function setupModule(
+        string $moduleFqn,
+        ContainerInterface $container,
+        array &$setupModules,
+        ?string $initialFqn = null
+    ): void {
+        $moduleList = self::getModuleList();
+        /** @var AbstractModule $moduleFqn */
+        if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $setupModules)) {
+            return;
+        }
+        if ($initialFqn !== null && $moduleFqn == $initialFqn) {
+            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
+        }
+        foreach ($moduleFqn::getDependencies() as $dependency) {
+            if (!array_key_exists($dependency, $moduleList)) {
+                throw new ModuleException(
+                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
+                );
+            }
+            $dependencyFqn = $moduleList[$dependency];
+            /** @var AbstractModule $dependencyFqn */
+            self::setupModule($dependencyFqn, $container, $setupModules, $moduleFqn);
+        }
+        $moduleFqn::setup($container);
+        $setupModules[$moduleFqn::getName()] = $moduleFqn;
     }
 }

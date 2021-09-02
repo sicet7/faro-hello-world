@@ -67,7 +67,7 @@ class Runner
             $customDefinitions[ConfigMap::class] = new ConfigMap();
             $customDefinitions[ConfigMap::class]->buildMap($this->config);
         }
-        $this->container = ModuleContainer::buildWebContainer($customDefinitions);
+        $this->container = ModuleContainer::buildContainer($customDefinitions);
         $this->container->get(Dispatcher::class)->dispatch(new WorkerStart($server, $workerId));
     }
 

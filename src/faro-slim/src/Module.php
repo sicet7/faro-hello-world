@@ -5,6 +5,7 @@ namespace Sicet7\Faro\Slim;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Sicet7\Faro\Config\ConfigMap;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Slim\Listeners\RequestListener;
@@ -30,8 +31,8 @@ class Module extends AbstractModule
         return [
             App::class => function (ContainerInterface $container) {
                 $app = AppFactory::createFromContainer($container);
-                $app->get('/', function(Request $request, Response $response) {
-                    $response->getBody()->write('Hello world!');
+                $app->get('/', function(Request $request, Response $response) use ($container) {
+                    $response->getBody()->write(var_export($container->get(ConfigMap::class)->readMap(), true));
                     return $response;
                 });
                 return $app;

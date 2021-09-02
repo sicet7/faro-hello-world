@@ -1,3 +1,7 @@
 /faro
 vendor/
 .idea/
+var/log
+var/tmp
+swoole.pid
+public

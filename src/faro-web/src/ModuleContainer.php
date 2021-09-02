@@ -7,52 +7,30 @@ use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
 use Sicet7\Faro\Core\Event\Dispatcher;
 use Sicet7\Faro\Core\Event\ListenerContainer;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\ModuleList;
+
 use function DI\create;
 use function DI\get;
 
-class ModuleContainer
+class ModuleContainer extends BaseModuleContainer
 {
-    /**
-     * @var array
-     */
-    private static array $moduleList = [];
-
-    /**
-     * @param string $moduleFqn
-     * @throws ModuleException
-     */
-    public static function registerModule(string $moduleFqn): void
-    {
-        if (!is_subclass_of($moduleFqn, AbstractModule::class)) {
-            throw new ModuleException(
-                'Module: "' . $moduleFqn . '" does not inherit from: "' . AbstractModule::class . '"'
-            );
-        }
-        if (in_array($moduleFqn, self::$moduleList)) {
-            throw new ModuleException('Module: "' . $moduleFqn . '" is already registered.');
-        }
-        if (array_key_exists($moduleFqn::getName(), self::$moduleList)) {
-            throw new ModuleException('A module with the name: "' . $moduleFqn::getName() . '" is already registered.');
-        }
-        self::$moduleList[$moduleFqn::getName()] = $moduleFqn;
-    }
-
     /**
      * @param array $customDefinitions
      * @return WebContainer
      * @throws ModuleException
      */
-    public static function buildWebContainer(array $customDefinitions = []): WebContainer
+    public static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
         $loadedModules = [];
         $containerBuilder = new ContainerBuilder(WebContainer::class);
         $containerBuilder->useAnnotations(false);
         $containerBuilder->useAutowiring(false);
-        foreach (self::$moduleList as $moduleFqn) {
+        foreach (self::getModuleList() as $moduleFqn) {
             self::loadModule($moduleFqn, $containerBuilder, $loadedModules);
         }
 
@@ -92,6 +70,7 @@ class ModuleContainer
         array &$loadedModules,
         ?string $initialFqn = null
     ): void {
+        $moduleList = self::getModuleList();
         /** @var AbstractModule $moduleFqn */
         if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $loadedModules)) {
             return;
@@ -100,12 +79,12 @@ class ModuleContainer
             throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
         }
         foreach ($moduleFqn::getDependencies() as $dependency) {
-            if (!array_key_exists($dependency, self::$moduleList)) {
+            if (!array_key_exists($dependency, $moduleList)) {
                 throw new ModuleException(
                     'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
                 );
             }
-            $dependencyFqn = self::$moduleList[$dependency];
+            $dependencyFqn = $moduleList[$dependency];
             /** @var AbstractModule $dependencyFqn */
             self::loadModule($dependencyFqn, $builder, $loadedModules, $moduleFqn);
         }
@@ -129,6 +108,7 @@ class ModuleContainer
         array &$setupModules,
         ?string $initialFqn = null
     ): void {
+        $moduleList = self::getModuleList();
         /** @var AbstractModule $moduleFqn */
         if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $setupModules)) {
             return;
@@ -137,12 +117,12 @@ class ModuleContainer
             throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
         }
         foreach ($moduleFqn::getDependencies() as $dependency) {
-            if (!array_key_exists($dependency, self::$moduleList)) {
+            if (!array_key_exists($dependency, $moduleList)) {
                 throw new ModuleException(
                     'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
                 );
             }
-            $dependencyFqn = self::$moduleList[$dependency];
+            $dependencyFqn = $moduleList[$dependency];
             /** @var AbstractModule $dependencyFqn */
             self::setupModule($dependencyFqn, $container, $setupModules, $moduleFqn);
         }

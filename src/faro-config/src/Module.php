@@ -4,7 +4,8 @@ namespace Sicet7\Faro\Config;
 
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Commands\ShowCommand;
-use Sicet7\Faro\Console\AbstractModule;
+use Sicet7\Faro\Console\HasCommandDefinitions;
+use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -13,7 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule
+class Module extends AbstractModule implements HasCommandDefinitions
 {
     /**
      * @inheritDoc
