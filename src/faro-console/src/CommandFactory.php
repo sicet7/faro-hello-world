@@ -28,16 +28,25 @@ class CommandFactory extends GenericFactory
         return parent::create($entry);
     }
 
+    /**
+     * @return array
+     */
     protected function getProvidedParameters(): array
     {
         return $this->providedParameters;
     }
 
+    /**
+     * @return array
+     */
     protected function getResolvedParameters(): array
     {
         return [];
     }
 
+    /**
+     * @return string[]
+     */
     protected function getClassWhitelist(): array
     {
         return [

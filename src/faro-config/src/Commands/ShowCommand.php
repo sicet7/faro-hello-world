@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sicet7\Faro\Config\Commands;
 
 use Sicet7\Faro\Config\ConfigMap;
@@ -19,6 +21,11 @@ class ShowCommand extends Command
      */
     private ConfigMap $configMap;
 
+    /**
+     * ShowCommand constructor.
+     * @param ConfigMap $configMap
+     * @param string|null $name
+     */
     public function __construct(
         ConfigMap $configMap,
         string $name = null
@@ -27,7 +34,10 @@ class ShowCommand extends Command
         $this->configMap = $configMap;
     }
 
-    protected function configure()
+    /**
+     * @return void
+     */
+    protected function configure(): void
     {
         $this->addArgument(
             'path',
@@ -36,8 +46,16 @@ class ShowCommand extends Command
         );
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
-    {
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws \ErrorException
+     */
+    public function execute(
+        InputInterface $input,
+        OutputInterface $output
+    ): int {
         $dumper = new CliDumper(null, 'UTF-8', AbstractDumper::DUMP_TRAILING_COMMA);
         $cloner = new VarCloner();
 

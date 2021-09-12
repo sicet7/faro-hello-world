@@ -1,6 +1,6 @@
 <?php
 
-use function Config\env;
+declare(strict_types=1);
 
 return [
     'root' => dirname(__DIR__),

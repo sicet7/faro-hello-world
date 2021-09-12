@@ -17,7 +17,7 @@ use function DI\get;
 class Module extends AbstractModule implements HasCommandDefinitions
 {
     /**
-     * @inheritDoc
+     * @return string
      */
     public static function getName(): string
     {
@@ -25,7 +25,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return string[]
      */
     public static function getCommandDefinitions(): array
     {
@@ -35,7 +35,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return array
      */
     public static function getDefinitions(): array
     {
@@ -47,20 +47,14 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @param ContainerInterface $container
+     * @return void
      */
     public static function setup(ContainerInterface $container): void
     {
         /** @var Application $application */
         /** @var ListenerContainerInterface $listenerContainer */
         $application = $container->get(Application::class);
-        $listenerContainer = $container->get(ListenerContainerInterface::class);
-
-        $listenerContainer->addListener(
-            ConsoleCommandEvent::class,
-            ConfigLoader::class,
-            'config.loader'
-        );
 
         $application->getDefinition()->addOption(
             new InputOption(

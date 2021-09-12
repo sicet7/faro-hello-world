@@ -21,20 +21,22 @@ use function DI\get;
 class Module extends AbstractModule
 {
 
+    /**
+     * @return string
+     */
     public static function getName(): string
     {
         return 'slim';
     }
 
+    /**
+     * @return array
+     */
     public static function getDefinitions(): array
     {
         return [
             App::class => function (ContainerInterface $container) {
                 $app = AppFactory::createFromContainer($container);
-                $app->get('/', function(Request $request, Response $response) use ($container) {
-                    $response->getBody()->write(var_export($container->get(ConfigMap::class)->readMap(), true));
-                    return $response;
-                });
                 return $app;
             },
             Psr17Factory::class => create(Psr17Factory::class),
@@ -42,14 +44,5 @@ class Module extends AbstractModule
             RequestListener::class => create(RequestListener::class)
                 ->constructor(get(App::class)),
         ];
-    }
-
-    public static function setup(ContainerInterface $container): void
-    {
-        $container->get(ListenerContainerInterface::class)->addListener(
-            RequestEvent::class,
-            RequestListener::class,
-            'slim.request.listener'
-        );
     }
 }

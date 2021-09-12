@@ -42,20 +42,23 @@ class ConfigMap implements ContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string $id
+     * @return mixed
+     * @throws ConfigException|ConfigNotFoundException
      */
-    public function get($id)
+    public function get(string $id): mixed
     {
         if ($this->has($id)) {
             return $this->map[$this->parseId($id)];
         }
-        throw new ConfigNotFoundException("Key: \"$id\" not found");
+        throw new ConfigNotFoundException('Key: "' . $id . '" not found');
     }
 
     /**
-     * @inheritDoc
+     * @param string $id
+     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         try {
             return array_key_exists($this->parseId($id), $this->map);
@@ -69,7 +72,7 @@ class ConfigMap implements ContainerInterface
      * @return string
      * @throws ConfigException
      */
-    protected function parseId($id): string
+    protected function parseId(string $id): string
     {
         if (!is_string($id)) {
             throw new ConfigException('Config Id must be a string');
@@ -82,8 +85,9 @@ class ConfigMap implements ContainerInterface
      * @param array $items
      * @param string|null $key
      * @throws ConfigException
+     * @return void
      */
-    protected function makeItemReferences(array &$items, string $key = null)
+    protected function makeItemReferences(array &$items, string $key = null): void
     {
         foreach ($items as $itemKey => &$item) {
             $cKey = ($key !== null ? $key . '.' . $itemKey : $itemKey);
@@ -100,7 +104,7 @@ class ConfigMap implements ContainerInterface
      * @param array $mainArray
      * @return array
      */
-    protected function dereferenceArray(array $mainArray)
+    protected function dereferenceArray(array $mainArray): array
     {
         $returnArray = [];
         foreach ($mainArray as $key => $value) {
@@ -115,8 +119,9 @@ class ConfigMap implements ContainerInterface
 
     /**
      * @throws ConfigException
+     * @return void
      */
-    protected function resolveMapVariables()
+    protected function resolveMapVariables(): void
     {
         foreach ($this->map as $key => $value) {
             if ($value instanceof VariableDefinitionInterface) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sicet7\Faro\Config\Definitions;
 
 use Sicet7\Faro\Config\ConfigMap;
@@ -24,6 +26,12 @@ class EnvironmentDefinition implements VariableDefinitionInterface
      */
     private mixed $defaultValue;
 
+    /**
+     * EnvironmentDefinition constructor.
+     * @param string $name
+     * @param bool $isOptional
+     * @param mixed|null $defaultValue
+     */
     public function __construct(
         string $name,
         bool $isOptional = true,
@@ -36,7 +44,9 @@ class EnvironmentDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @inheritDoc
+     * @param ConfigMap $configMap
+     * @return mixed
+     * @throws ConfigException
      */
     public function resolve(ConfigMap $configMap): mixed
     {

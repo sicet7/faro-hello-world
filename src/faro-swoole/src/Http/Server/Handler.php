@@ -24,6 +24,7 @@ class Handler
      * @param string $ip
      * @param int $port
      * @param bool $ssl
+     * @return void
      */
     public function init(string $ip, int $port, bool $ssl = false)
     {
@@ -38,6 +39,7 @@ class Handler
     /**
      * @param ConfigMap $configMap
      * @throws SwooleException
+     * @return void
      */
     public function configure(ConfigMap $configMap): void
     {
@@ -56,6 +58,7 @@ class Handler
 
     /**
      * @throws SwooleException
+     * @return void
      */
     public function start(): void
     {

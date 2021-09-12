@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sicet7\Faro\Config\Definitions;
 
 use Sicet7\Faro\Config\ConfigMap;
@@ -19,7 +21,9 @@ class ConcatDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @inheritDoc
+     * @param ConfigMap $configMap
+     * @return mixed
+     * @throws ConfigException
      */
     public function resolve(ConfigMap $configMap): mixed
     {

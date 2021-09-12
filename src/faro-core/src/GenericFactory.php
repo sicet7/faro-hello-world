@@ -13,6 +13,10 @@ abstract class GenericFactory
      */
     private ParameterResolver $resolver;
 
+    /**
+     * GenericFactory constructor.
+     * @param ParameterResolver $resolver
+     */
     public function __construct(ParameterResolver $resolver)
     {
         $this->resolver = $resolver;

@@ -3,6 +3,7 @@
 namespace Sicet7\Faro\Core\Event;
 
 use Psr\Container\ContainerInterface;
+use Sicet7\Faro\Core\Event\Attribute\ListensTo;
 use Sicet7\Faro\Core\Exception\EventListenerException;
 
 class ListenerContainer implements ListenerContainerInterface
@@ -13,7 +14,7 @@ class ListenerContainer implements ListenerContainerInterface
     private ContainerInterface $container;
 
     /**
-     * @var array[]
+     * @var string[]
      */
     private array $listeners = [];
 
@@ -27,61 +28,62 @@ class ListenerContainer implements ListenerContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param object $event
+     * @return iterable
      */
     public function getListenersForEvent(object $event): iterable
     {
-        $fqn = $this->parseEventFqn(get_class($event));
-        $listeners = $this->listeners[$fqn] ?? [];
-        $returnArray = [];
-        if (empty($listeners)) {
-            return [];
-        }
-        foreach ($listeners as $listener) {
-            if (!is_subclass_of($listener, ListenerInterface::class)) {
-                continue;
+        $fqn = get_class($event);
+        $listeners = [];
+        foreach ($this->listeners as $listener => $eventFqn) {
+            if ($fqn == $eventFqn) {
+                $listeners[] = [
+                    $this->container->get($listener),
+                    'execute'
+                ];
             }
-            $returnArray[] = [
-                $this->container->get($listener),
-                'execute'
-            ];
         }
-        return $returnArray;
+        return $listeners;
     }
 
     /**
-     * @inheritDoc
+     * @param string $listenerFqn
+     * @return $this
      * @throws EventListenerException
      */
-    public function addListener(string $eventFqn, string $listener, string $identifier): ListenerContainer
+    public function addListener(string $listenerFqn): ListenerContainer
     {
-        $eventFqn = $this->parseEventFqn($eventFqn);
-        if (!isset($this->listeners[$eventFqn]) || !is_array($this->listeners[$eventFqn])) {
-            $this->listeners[$eventFqn] = [];
-        }
-        if (!is_subclass_of($listener, ListenerInterface::class)) {
+        if (!is_subclass_of($listenerFqn, ListenerInterface::class)) {
             throw new EventListenerException(
-                'Event Listener must be subclass of: "' . ListenerInterface::class . "\": \"$listener\" is not."
+                '"' . $listenerFqn . '" does not implement: "' . ListenerInterface::class . '"'
             );
         }
-        if (!$this->container->has($listener)) {
-            throw new EventListenerException("Event Listener: \"$listener\" not found in container.");
+        if (!$this->container->has($listenerFqn)) {
+            throw new EventListenerException('Event Listener: "' . $listenerFqn . '" not found in container.');
         }
-        if (isset($this->listeners[$eventFqn][$identifier])) {
-            throw new EventListenerException("Identifier already exists: \"$identifier\".");
+        $reflectionClass = new \ReflectionClass($listenerFqn);
+        $eventFqn = null;
+        foreach ($reflectionClass->getAttributes(ListensTo::class) as $attribute) {
+            $attributeInstance = $attribute->newInstance();
+            if ($attributeInstance instanceof ListensTo) {
+                $eventFqn = $attributeInstance->getEventFqn();
+                break;
+            }
         }
-        $this->listeners[$eventFqn][$identifier] = $listener;
+        if ($eventFqn !== null && class_exists($eventFqn)) {
+            $this->listeners[$listenerFqn] = $eventFqn;
+        }
         return $this;
     }
 
     /**
-     * @inheritDoc
+     * @param string $listenerFqn
+     * @return $this
      */
-    public function removeListener(string $eventFqn, string $identifier): ListenerContainer
+    public function removeListener(string $listenerFqn): ListenerContainer
     {
-        $eventFqn = $this->parseEventFqn($eventFqn);
-        if (isset($this->listeners[$eventFqn][$identifier])) {
-            unset($this->listeners[$eventFqn][$identifier]);
+        if (array_key_exists($listenerFqn, $this->listeners)) {
+            unset($this->listeners[$listenerFqn]);
         }
         return $this;
     }

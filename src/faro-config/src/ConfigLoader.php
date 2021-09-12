@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\Config;
 
+use Sicet7\Faro\Core\Event\Attribute\ListensTo;
 use Sicet7\Faro\Core\Event\ListenerInterface;
 use RecursiveDirectoryIterator;
 use FilesystemIterator;
@@ -10,6 +11,7 @@ use SplFileInfo;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
+#[ListensTo(ConsoleCommandEvent::class)]
 class ConfigLoader implements ListenerInterface
 {
     /**
@@ -27,8 +29,9 @@ class ConfigLoader implements ListenerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param object $event
      * @throws ConfigException
+     * @return void
      */
     public function execute(object $event): void
     {
@@ -43,21 +46,31 @@ class ConfigLoader implements ListenerInterface
             }
         }
 
+        $configEnv = getenv('CONFIG_PATHS');
+        if ($configEnv !== false && is_string($configEnv) && !empty($configEnv)) {
+            foreach (explode(',', $configEnv) as $configPath) {
+                $conf = $this->loadConfig($configPath);
+                if (!empty($conf)) {
+                    $configs = array_merge_recursive($configs, $conf);
+                }
+            }
+        }
+
         if ($event instanceof ConsoleCommandEvent) {
             $input = $event->getInput();
             if ($input->hasOption('config')) {
                 foreach ($input->getOption('config') as $path) {
                     $path = match (substr($path, 0, 1)) {
                         '/' => $path,
-                    default => realpath(getcwd() . '/' . $path),
+                        default => realpath(getcwd() . '/' . $path),
                     };
-                        if (!is_string($path)) {
-                            continue;
-                        }
-                        $conf = $this->loadConfig($path);
-                        if (!empty($conf)) {
-                            $configs = array_merge_recursive($configs, $conf);
-                        }
+                    if (!is_string($path)) {
+                        continue;
+                    }
+                    $conf = $this->loadConfig($path);
+                    if (!empty($conf)) {
+                        $configs = array_merge_recursive($configs, $conf);
+                    }
                 }
             }
         }
@@ -104,14 +117,14 @@ class ConfigLoader implements ListenerInterface
             $configs = match ($extension) {
                 'php' => require $fileOrDir,
                 'ini' => parse_ini_file($fileOrDir, true, INI_SCANNER_TYPED),
-            default => null
+                default => null
             };
 
-                if (!empty($configs)) {
-                    return [
+            if (!empty($configs)) {
+                return [
                     $name => $configs,
-                    ];
-                }
+                ];
+            }
         }
         return null;
     }

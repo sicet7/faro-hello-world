@@ -25,6 +25,15 @@
     <rule ref="Squiz.Commenting.FunctionCommentThrowTag" />
     <rule ref="Squiz.Commenting.PostStatementComment" />
     <rule ref="Generic.Files.InlineHTML" />
+    <rule ref="Generic.Files.LineEndings" />
+    <rule ref="Generic.Files.EndFileNewline" />
     <rule ref="Generic.Formatting.SpaceAfterCast" />
+    <rule ref="Squiz.Commenting.FunctionComment.Missing"/>
+    <rule ref="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+    <rule ref="Squiz.Commenting.FunctionComment.MissingParamName"/>
+    <rule ref="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
+    <rule ref="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
+    <rule ref="Squiz.Commenting.FunctionComment.MissingReturn"/>
+    <rule ref="Squiz.Strings.DoubleQuoteUsage"/>
 
 </ruleset>

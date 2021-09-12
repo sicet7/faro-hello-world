@@ -27,7 +27,7 @@ unset($loaded);
 use Sicet7\Faro\Console\ModuleContainer;
 use Symfony\Component\Console\Application;
 
-$container = ModuleContainer::buildContainer();
+$container = ModuleContainer::getContainer();
 
 $application = $container->get(Application::class);
 

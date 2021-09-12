@@ -42,9 +42,9 @@ class StartCommand extends Command
     }
 
     /**
-     * @inheritDoc
+     * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument(
             'ip_and_port',
@@ -54,12 +54,15 @@ class StartCommand extends Command
     }
 
     /**
-     * @inheritDoc
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @throws SwooleException|RuntimeException
+     * @return int
      */
     public function execute(
         InputInterface $input,
         OutputInterface $output
-    ) {
+    ): int {
         $ipAndPort = $input->getArgument('ip_and_port');
         if (!$this->validateIpAndPort($ipAndPort)) {
             throw new RuntimeException('Invalid IP for Port.');
@@ -72,6 +75,10 @@ class StartCommand extends Command
         return 0;
     }
 
+    /**
+     * @param string $ipAndPort
+     * @return string
+     */
     public function getIp(string $ipAndPort): string
     {
         if (substr_count($ipAndPort, ':') === 1) {
@@ -81,6 +88,10 @@ class StartCommand extends Command
         return $ipAndPort;
     }
 
+    /**
+     * @param string $ipAndPort
+     * @return int
+     */
     public function getPort(string $ipAndPort): int
     {
         if (substr_count($ipAndPort, ':') === 1) {
@@ -90,6 +101,10 @@ class StartCommand extends Command
         return self::DEFAULT_PORT;
     }
 
+    /**
+     * @param string $ipAndPort
+     * @return bool
+     */
     public function validateIpAndPort(string $ipAndPort): bool
     {
         if (substr_count($ipAndPort, ':') === 1) {

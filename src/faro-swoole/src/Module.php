@@ -12,7 +12,7 @@ use function DI\create;
 class Module extends AbstractModule implements HasCommandDefinitions
 {
     /**
-     * @inheritDoc
+     * @return string
      */
     public static function getName(): string
     {
@@ -20,7 +20,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return bool
      */
     public static function isEnabled(): bool
     {
@@ -28,7 +28,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return array
      */
     public static function getDefinitions(): array
     {
@@ -38,7 +38,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return string[]
      */
     public static function getDependencies(): array
     {
@@ -48,7 +48,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     }
 
     /**
-     * @inheritDoc
+     * @return string[]
      */
     public static function getCommandDefinitions(): array
     {

@@ -27,6 +27,7 @@ abstract class AbstractModule
      * Override this method to interact with the container right after it is created.
      *
      * @param ContainerInterface $container
+     * @return void
      */
     public static function setup(ContainerInterface $container): void
     {

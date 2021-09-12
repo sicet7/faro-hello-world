@@ -7,17 +7,14 @@ use Psr\EventDispatcher\ListenerProviderInterface;
 interface ListenerContainerInterface extends ListenerProviderInterface
 {
     /**
-     * @param string $eventFqn
-     * @param string $listener
-     * @param string $identifier
+     * @param string $listenerFqn
      * @return ListenerContainerInterface
      */
-    public function addListener(string $eventFqn, string $listener, string $identifier): ListenerContainerInterface;
+    public function addListener(string $listenerFqn): ListenerContainerInterface;
 
     /**
-     * @param string $eventFqn
-     * @param string $identifier
+     * @param string $listenerFqn
      * @return ListenerContainerInterface
      */
-    public function removeListener(string $eventFqn, string $identifier): ListenerContainerInterface;
+    public function removeListener(string $listenerFqn): ListenerContainerInterface;
 }

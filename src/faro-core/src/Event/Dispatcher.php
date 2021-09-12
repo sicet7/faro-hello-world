@@ -13,6 +13,10 @@ class Dispatcher implements EventDispatcherInterface
      */
     private ListenerContainerInterface $listenerContainer;
 
+    /**
+     * Dispatcher constructor.
+     * @param ListenerContainerInterface $listenerContainer
+     */
     public function __construct(ListenerContainerInterface $listenerContainer)
     {
         $this->listenerContainer = $listenerContainer;

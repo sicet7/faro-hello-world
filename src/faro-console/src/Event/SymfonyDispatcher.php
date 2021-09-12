@@ -22,7 +22,9 @@ class SymfonyDispatcher implements SymfonyEventDispatcherInterface
     }
 
     /**
-     * @inheritDoc
+     * @param object $event
+     * @param string|null $eventName
+     * @return object
      */
     public function dispatch(object $event, string $eventName = null): object
     {

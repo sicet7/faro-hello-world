@@ -45,6 +45,7 @@ class RequestEvent implements StoppableEventInterface
 
     /**
      * @param ResponseInterface $response
+     * @return void
      */
     public function setResponse(ResponseInterface $response): void
     {

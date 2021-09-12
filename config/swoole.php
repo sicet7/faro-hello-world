@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use function Config\concat;
 use function Config\env;
 use function Config\val;

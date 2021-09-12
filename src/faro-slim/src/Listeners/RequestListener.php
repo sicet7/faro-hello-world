@@ -2,10 +2,12 @@
 
 namespace Sicet7\Faro\Slim\Listeners;
 
+use Sicet7\Faro\Core\Event\Attribute\ListensTo;
 use Sicet7\Faro\Core\Event\ListenerInterface;
 use Sicet7\Faro\Web\RequestEvent;
 use Slim\App;
 
+#[ListensTo(RequestEvent::class)]
 class RequestListener implements ListenerInterface
 {
     /**
@@ -24,6 +26,7 @@ class RequestListener implements ListenerInterface
 
     /**
      * @param object $event
+     * @return void
      */
     public function execute(object $event): void
     {

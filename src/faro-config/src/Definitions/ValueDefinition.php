@@ -19,7 +19,8 @@ class ValueDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @inheritDoc
+     * @param ConfigMap $configMap
+     * @return mixed
      */
     public function resolve(ConfigMap $configMap): mixed
     {
