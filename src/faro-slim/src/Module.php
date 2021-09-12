@@ -2,18 +2,13 @@
 
 namespace Sicet7\Faro\Slim;
 
+use DI\Bridge\Slim\Bridge;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
-use Sicet7\Faro\Config\ConfigMap;
 use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Slim\Listeners\RequestListener;
-use Sicet7\Faro\Web\RequestEvent;
 use Slim\App;
-use Slim\Factory\AppFactory;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
 
 use function DI\create;
 use function DI\get;
@@ -36,7 +31,7 @@ class Module extends AbstractModule
     {
         return [
             App::class => function (ContainerInterface $container) {
-                $app = AppFactory::createFromContainer($container);
+                $app = Bridge::create($container);
                 return $app;
             },
             Psr17Factory::class => create(Psr17Factory::class),

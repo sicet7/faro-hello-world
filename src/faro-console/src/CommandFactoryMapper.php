@@ -8,6 +8,9 @@ use function DI\factory;
 
 class CommandFactoryMapper
 {
+    /**
+     * @var array
+     */
     private array $commandMap = [];
 
     /**

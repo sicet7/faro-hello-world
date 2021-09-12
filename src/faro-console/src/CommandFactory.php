@@ -11,6 +11,9 @@ use Symfony\Component\Console\Command\Command;
 
 class CommandFactory extends GenericFactory
 {
+    /**
+     * @var array
+     */
     private array $providedParameters = [];
 
     /**

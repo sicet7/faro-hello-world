@@ -4,6 +4,7 @@ namespace Sicet7\Faro\Swoole\Http\Server;
 
 use DI\DependencyException;
 use DI\NotFoundException;
+use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\ConfigMap;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
@@ -14,7 +15,6 @@ use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
 use Sicet7\Faro\Web\ModuleContainer;
 use Sicet7\Faro\Web\RequestEvent;
-use Sicet7\Faro\Web\WebContainer;
 use Ilex\SwoolePsr7\SwooleServerRequestConverter;
 use Ilex\SwoolePsr7\SwooleResponseConverter;
 use Swoole\Http\Request;
@@ -25,8 +25,14 @@ use function DI\create;
 
 class Runner
 {
-    private ?WebContainer $container = null;
+    /**
+     * @var ContainerInterface|null
+     */
+    private ?ContainerInterface $container = null;
 
+    /**
+     * @var array|null
+     */
     private ?array $config = null;
 
     /**

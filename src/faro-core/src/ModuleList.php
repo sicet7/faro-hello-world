@@ -4,6 +4,9 @@ namespace Sicet7\Faro\Core;
 
 class ModuleList
 {
+    /**
+     * @var array
+     */
     private array $loadedModules;
 
     /**

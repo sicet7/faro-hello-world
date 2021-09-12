@@ -9,6 +9,9 @@ use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class EnvironmentDefinition implements VariableDefinitionInterface
 {
+    /**
+     * @var mixed|EnvironmentDefinition
+     */
     private mixed $cachedValue;
 
     /**

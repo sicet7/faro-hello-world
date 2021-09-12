@@ -55,7 +55,7 @@ class ModuleContainer extends BaseModuleContainer
                         create(AssociativeArrayResolver::class),
                         create(FactoryParameterResolver::class)
                             ->constructor(get(ContainerInterface::class)),
-                        create(DefaultValueResolver::class)
+                        create(DefaultValueResolver::class),
                     ])),
             ListenerContainer::class => create(ListenerContainer::class)
                 ->constructor(get(ContainerInterface::class)),

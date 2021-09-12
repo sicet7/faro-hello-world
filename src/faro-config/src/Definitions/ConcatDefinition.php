@@ -9,6 +9,9 @@ use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class ConcatDefinition implements VariableDefinitionInterface
 {
+    /**
+     * @var array
+     */
     private array $concatItems;
 
     /**

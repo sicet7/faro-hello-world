@@ -7,6 +7,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS)]
 class ListensTo
 {
+    /**
+     * @var string
+     */
     private string $eventFqn;
 
     /**

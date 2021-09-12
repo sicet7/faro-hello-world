@@ -11,13 +11,22 @@
     <!-- exclude our migrations directory from the violation check-->
     <!--<exclude-pattern>*/migrations/*</exclude-pattern>-->
 
+    <config name="severity" value="5"/>
+
     <!-- ignore warnings and display ERRORS only -->
     <!--<arg  value="np"/>-->
 
     <!-- Our base rule: set to PSR12-->
     <rule ref="PSR12"/>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed"/>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.NoComma" />
+    <rule ref="Squiz.Arrays.ArrayDeclaration">
+        <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNotAligned" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.KeyNotAligned" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.DoubleArrowNotAligned" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNotAligned" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNoNewline" />
+        <exclude name="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed" />
+    </rule>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax" />
     <rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier" />
     <rule ref="Squiz.Commenting.EmptyCatchComment" />
@@ -25,8 +34,6 @@
     <rule ref="Squiz.Commenting.FunctionCommentThrowTag" />
     <rule ref="Squiz.Commenting.PostStatementComment" />
     <rule ref="Generic.Files.InlineHTML" />
-    <rule ref="Generic.Files.LineEndings" />
-    <rule ref="Generic.Files.EndFileNewline" />
     <rule ref="Generic.Formatting.SpaceAfterCast" />
     <rule ref="Squiz.Commenting.FunctionComment.Missing"/>
     <rule ref="Squiz.Commenting.FunctionComment.MissingParamTag"/>
@@ -35,5 +42,24 @@
     <rule ref="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
     <rule ref="Squiz.Commenting.FunctionComment.MissingReturn"/>
     <rule ref="Squiz.Strings.DoubleQuoteUsage"/>
+    <rule ref="Squiz.PHP.Eval"/>
+    <rule ref="Squiz.PHP.GlobalKeyword"/>
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="sizeof" value="count"/>
+                <element key="delete" value="unset"/>
+                <element key="print" value="echo"/>
+                <element key="is_null" value="null"/>
+                <element key="create_function" value="null"/>
+            </property>
+        </properties>
+    </rule>
+    <rule ref="Squiz.Commenting.VariableComment">
+        <exclude name="Squiz.Commenting.VariableComment.IncorrectVarType"/>
+    </rule>
+    <rule ref="Squiz.NamingConventions.ValidVariableName">
+        <exclude name="Squiz.NamingConventions.ValidVariableName.PrivateNoUnderscore" />
+    </rule>
 
 </ruleset>

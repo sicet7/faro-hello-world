@@ -39,7 +39,7 @@ class ListenerContainer implements ListenerContainerInterface
             if ($fqn == $eventFqn) {
                 $listeners[] = [
                     $this->container->get($listener),
-                    'execute'
+                    'execute',
                 ];
             }
         }

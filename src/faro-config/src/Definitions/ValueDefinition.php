@@ -7,6 +7,9 @@ use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class ValueDefinition implements VariableDefinitionInterface
 {
+    /**
+     * @var string
+     */
     private string $configPath;
 
     /**

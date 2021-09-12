@@ -27,13 +27,13 @@ class ModuleContainer extends BaseModuleContainer
 
     /**
      * @param array $customDefinitions
-     * @return WebContainer
+     * @return ContainerInterface
      * @throws ModuleException
      */
-    protected static function buildContainer(array $customDefinitions = []): WebContainer
+    protected static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
         $loadedModules = [];
-        $containerBuilder = new ContainerBuilder(WebContainer::class);
+        $containerBuilder = new ContainerBuilder();
         $containerBuilder->useAnnotations(false);
         $containerBuilder->useAutowiring(false);
         $moduleList = self::getModuleList();

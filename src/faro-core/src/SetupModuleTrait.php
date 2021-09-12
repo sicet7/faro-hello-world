@@ -8,7 +8,6 @@ use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Core\Event\ListenerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
-use Sicet7\Faro\Web\WebContainer;
 
 trait SetupModuleTrait
 {
