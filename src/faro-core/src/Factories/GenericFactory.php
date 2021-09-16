@@ -1,6 +1,6 @@
 <?php
 
-namespace Sicet7\Faro\Core;
+namespace Sicet7\Faro\Core\Factories;
 
 use DI\DependencyException;
 use DI\Factory\RequestedEntry;

@@ -45,14 +45,6 @@ trait SetupModuleTrait
             /** @var AbstractModule $dependencyFqn */
             self::setupModule($moduleList, $dependencyFqn, $container, $setupModules, $moduleFqn);
         }
-        if ($container->has(ListenerContainerInterface::class)) {
-            $listenerContainer = $container->get(ListenerContainerInterface::class);
-            foreach ($moduleFqn::getDefinitions() as $fqn => $factory) {
-                if (is_subclass_of($fqn, ListenerInterface::class)) {
-                    $listenerContainer->addListener($fqn);
-                }
-            }
-        }
         $moduleFqn::setup($container);
         $setupModules[$moduleFqn::getName()] = $moduleFqn;
     }

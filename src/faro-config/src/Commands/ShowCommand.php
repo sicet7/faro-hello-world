@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sicet7\Faro\Config\Commands;
 
 use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Core\Attributes\Name;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,6 +14,7 @@ use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 
+#[Name('config:show')]
 class ShowCommand extends Command
 {
 

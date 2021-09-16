@@ -21,8 +21,7 @@
         "symfony/event-dispatcher-contracts": "^2.2",
         "ilexn/swoole-convert-psr7": "^0.3.0",
         "nyholm/psr7": "^1.4",
-        "slim/slim": "4.*",
-        "php-di/slim-bridge": "^3.1"
+        "slim/slim": "4.*"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.5",
@@ -38,9 +37,11 @@
             "Sicet7\\Faro\\Slim\\": "src/faro-slim/src/"
         },
         "files": [
+            "src/faro-console/module.php",
             "src/faro-swoole/module.php",
             "src/faro-config/module.php",
             "src/faro-config/functions.php",
+            "src/faro-web/module.php",
             "src/faro-slim/module.php"
         ]
     },

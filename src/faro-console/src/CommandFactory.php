@@ -6,7 +6,7 @@ namespace Sicet7\Faro\Console;
 
 use DI\DependencyException;
 use DI\Factory\RequestedEntry;
-use Sicet7\Faro\Core\GenericFactory;
+use Sicet7\Faro\Core\Factories\GenericFactory;
 use Symfony\Component\Console\Command\Command;
 
 class CommandFactory extends GenericFactory

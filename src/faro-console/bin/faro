@@ -1,21 +1,21 @@
 #!/usr/bin/env php
 <?php
 $autoloadPaths = [
-    __DIR__ . '/../../../autoload.php',
-    __DIR__ . '/../../autoload.php',
-    __DIR__ . '/../autoload.php',
-    __DIR__ . '/autoload.php',
-    __DIR__ . '/../../../vendor/autoload.php',
-    __DIR__ . '/../../vendor/autoload.php',
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/vendor/autoload.php',
+    '/autoload.php',
+    '/vendor/autoload.php',
 ];
 $loaded = false;
 foreach ($autoloadPaths as $autoload) {
-    if (file_exists($autoload)) {
-        require_once $autoload;
-        $loaded = true;
-        break;
+    for($i = 0; $i < 4; $i++) {
+        $dir = __DIR__;
+        if ($i > 0) {
+            $dir = dirname($dir, $i);
+        }
+        if (file_exists($dir . $autoload)) {
+            require_once $dir . $autoload;
+            $loaded = true;
+            break 2;
+        }
     }
 }
 

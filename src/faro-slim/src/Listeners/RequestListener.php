@@ -2,8 +2,8 @@
 
 namespace Sicet7\Faro\Slim\Listeners;
 
-use Sicet7\Faro\Core\Event\Attribute\ListensTo;
-use Sicet7\Faro\Core\Event\ListenerInterface;
+use Sicet7\Faro\Core\Attributes\ListensTo;
+use Sicet7\Faro\Core\Interfaces\Event\ListenerInterface;
 use Sicet7\Faro\Web\RequestEvent;
 use Slim\App;
 

@@ -2,11 +2,11 @@
 
 namespace Sicet7\Faro\Config;
 
-use Sicet7\Faro\Core\Event\Attribute\ListensTo;
-use Sicet7\Faro\Core\Event\ListenerInterface;
 use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use RecursiveIteratorIterator;
+use Sicet7\Faro\Core\Attributes\ListensTo;
+use Sicet7\Faro\Core\Interfaces\Event\ListenerInterface;
 use SplFileInfo;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
@@ -36,15 +36,6 @@ class ConfigLoader implements ListenerInterface
     public function execute(object $event): void
     {
         $configs = [];
-
-        if (isset($_SERVER['HOME'])) {
-            $configsPath = $_SERVER['HOME'] . '/.config/faro';
-            $configs['home']['path'] = $configsPath;
-            $conf = $this->loadConfig($configsPath);
-            if (!empty($conf)) {
-                $configs = array_merge_recursive($configs, $conf);
-            }
-        }
 
         $configEnv = getenv('CONFIG_PATHS');
         if ($configEnv !== false && is_string($configEnv) && !empty($configEnv)) {

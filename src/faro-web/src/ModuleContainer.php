@@ -11,7 +11,7 @@ use Sicet7\Faro\Core\Event\ListenerInterface;
 use Sicet7\Faro\Core\LoadModuleTrait;
 use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
 use Sicet7\Faro\Core\Event\Dispatcher;
-use Sicet7\Faro\Core\Event\ListenerContainer;
+use Sicet7\Faro\Core\Event\ListenerProvider;
 use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\ModuleList;
@@ -43,13 +43,6 @@ class ModuleContainer extends BaseModuleContainer
 
         $containerBuilder->addDefinitions([
             ModuleList::class => new ModuleList($loadedModules),
-            ListenerContainer::class => create(ListenerContainer::class)
-                ->constructor(get(ContainerInterface::class)),
-            Dispatcher::class => create(Dispatcher::class)
-                ->constructor(get(ListenerProviderInterface::class)),
-            ListenerContainerInterface::class => get(ListenerContainer::class),
-            ListenerProviderInterface::class => get(ListenerContainerInterface::class),
-            PsrEventDispatcherInterface::class => get(Dispatcher::class),
         ]);
 
         if (!empty($customDefinitions)) {

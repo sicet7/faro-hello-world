@@ -3,21 +3,22 @@
 namespace Sicet7\Faro\Core\Event;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 class Dispatcher implements EventDispatcherInterface
 {
 
     /**
-     * @var ListenerContainerInterface
+     * @var ListenerProviderInterface
      */
-    private ListenerContainerInterface $listenerContainer;
+    private ListenerProviderInterface $listenerContainer;
 
     /**
      * Dispatcher constructor.
-     * @param ListenerContainerInterface $listenerContainer
+     * @param ListenerProviderInterface $listenerContainer
      */
-    public function __construct(ListenerContainerInterface $listenerContainer)
+    public function __construct(ListenerProviderInterface $listenerContainer)
     {
         $this->listenerContainer = $listenerContainer;
     }

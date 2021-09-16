@@ -3,10 +3,12 @@
 namespace Sicet7\Faro\Core\Event;
 
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Core\Event\Attribute\ListensTo;
+use Sicet7\Faro\Core\Attributes\ListensTo;
 use Sicet7\Faro\Core\Exception\EventListenerException;
+use Sicet7\Faro\Core\Interfaces\Event\ListenerInterface;
+use Sicet7\Faro\Core\Interfaces\Event\ListenerProviderInterface;
 
-class ListenerContainer implements ListenerContainerInterface
+class ListenerProvider implements ListenerProviderInterface
 {
     /**
      * @var ContainerInterface
@@ -47,21 +49,21 @@ class ListenerContainer implements ListenerContainerInterface
     }
 
     /**
-     * @param string $listenerFqn
+     * @param string $listener
      * @return $this
      * @throws EventListenerException
      */
-    public function addListener(string $listenerFqn): ListenerContainer
+    public function addListener(string $listener): ListenerProvider
     {
-        if (!is_subclass_of($listenerFqn, ListenerInterface::class)) {
+        if (!is_subclass_of($listener, ListenerInterface::class)) {
             throw new EventListenerException(
-                '"' . $listenerFqn . '" does not implement: "' . ListenerInterface::class . '"'
+                '"' . $listener . '" does not implement: "' . ListenerInterface::class . '"'
             );
         }
-        if (!$this->container->has($listenerFqn)) {
-            throw new EventListenerException('Event Listener: "' . $listenerFqn . '" not found in container.');
+        if (!$this->container->has($listener)) {
+            throw new EventListenerException('Event Listener: "' . $listener . '" not found in container.');
         }
-        $reflectionClass = new \ReflectionClass($listenerFqn);
+        $reflectionClass = new \ReflectionClass($listener);
         $eventFqn = null;
         foreach ($reflectionClass->getAttributes(ListensTo::class) as $attribute) {
             $attributeInstance = $attribute->newInstance();
@@ -71,19 +73,19 @@ class ListenerContainer implements ListenerContainerInterface
             }
         }
         if ($eventFqn !== null && class_exists($eventFqn)) {
-            $this->listeners[$listenerFqn] = $eventFqn;
+            $this->listeners[$listener] = $eventFqn;
         }
         return $this;
     }
 
     /**
-     * @param string $listenerFqn
+     * @param string $listener
      * @return $this
      */
-    public function removeListener(string $listenerFqn): ListenerContainer
+    public function removeListener(string $listener): ListenerProvider
     {
-        if (array_key_exists($listenerFqn, $this->listeners)) {
-            unset($this->listeners[$listenerFqn]);
+        if (array_key_exists($listener, $this->listeners)) {
+            unset($this->listeners[$listener]);
         }
         return $this;
     }

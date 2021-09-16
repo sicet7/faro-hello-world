@@ -2,14 +2,14 @@
 
 namespace Sicet7\Faro\Swoole;
 
-use Sicet7\Faro\Console\HasCommandDefinitions;
+use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
 use Sicet7\Faro\Swoole\Http\Server\Handler;
 
 use function DI\create;
 
-class Module extends AbstractModule implements HasCommandDefinitions
+class Module extends AbstractModule implements HasCommandsInterface
 {
     /**
      * @return string
@@ -43,6 +43,7 @@ class Module extends AbstractModule implements HasCommandDefinitions
     public static function getDependencies(): array
     {
         return [
+            'console',
             'config',
         ];
     }
@@ -50,10 +51,10 @@ class Module extends AbstractModule implements HasCommandDefinitions
     /**
      * @return string[]
      */
-    public static function getCommandDefinitions(): array
+    public static function getCommands(): array
     {
         return [
-            'swoole:server:start' => StartCommand::class,
+            StartCommand::class,
         ];
     }
 }

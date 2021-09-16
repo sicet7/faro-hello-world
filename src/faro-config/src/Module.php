@@ -4,17 +4,16 @@ namespace Sicet7\Faro\Config;
 
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Commands\ShowCommand;
-use Sicet7\Faro\Console\HasCommandDefinitions;
+use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Core\Event\ListenerContainerInterface;
+use Sicet7\Faro\Core\Interfaces\HasListenersInterface;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Input\InputOption;
 
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule implements HasCommandDefinitions
+class Module extends AbstractModule implements HasCommandsInterface, HasListenersInterface
 {
     /**
      * @return string
@@ -27,10 +26,10 @@ class Module extends AbstractModule implements HasCommandDefinitions
     /**
      * @return string[]
      */
-    public static function getCommandDefinitions(): array
+    public static function getCommands(): array
     {
         return [
-            'config:show' => ShowCommand::class,
+            ShowCommand::class,
         ];
     }
 
@@ -53,7 +52,6 @@ class Module extends AbstractModule implements HasCommandDefinitions
     public static function setup(ContainerInterface $container): void
     {
         /** @var Application $application */
-        /** @var ListenerContainerInterface $listenerContainer */
         $application = $container->get(Application::class);
 
         $application->getDefinition()->addOption(
@@ -65,5 +63,25 @@ class Module extends AbstractModule implements HasCommandDefinitions
                 []
             )
         );
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getDependencies(): array
+    {
+        return [
+            'console',
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getListeners(): array
+    {
+        return [
+            ConfigLoader::class
+        ];
     }
 }

@@ -3,8 +3,16 @@
 namespace Sicet7\Faro\Core;
 
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface as PsrListenerProviderInterface;
+use Sicet7\Faro\Core\Event\Dispatcher;
+use Sicet7\Faro\Core\Event\ListenerProvider;
 use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\Interfaces\Event\ListenerProviderInterface;
+use Sicet7\Faro\Core\Interfaces\HasListenersInterface;
+use function DI\create;
+use function DI\get;
 
 abstract class ModuleContainer
 {
@@ -91,8 +99,32 @@ abstract class ModuleContainer
         if (empty(static::getModuleList())) {
             throw new ContainerException('Could not create empty container.');
         }
+        $customDefinitions = array_merge([
+            ListenerProvider::class => create(ListenerProvider::class)
+                ->constructor(get(ContainerInterface::class)),
+
+            ListenerProviderInterface::class => get(ListenerProvider::class),
+            PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
+
+            Dispatcher::class => create(Dispatcher::class)
+                ->constructor(get(ListenerProviderInterface::class)),
+            PsrEventDispatcherInterface::class => get(Dispatcher::class),
+        ], $customDefinitions);
         self::resolveModuleList();
-        return static::buildContainer($customDefinitions);
+        $container = static::buildContainer($customDefinitions);
+        if ($container->has(ModuleList::class)) {
+            /** @var ModuleList $moduleList */
+            $moduleList = $container->has(ModuleList::class);
+            $listenerContainer = $container->get(ListenerProviderInterface::class);
+            foreach ($moduleList->getLoadedModules() as $module) {
+                if (is_subclass_of($module, HasListenersInterface::class)) {
+                    foreach ($module::getListeners() as $listener) {
+                        $listenerContainer->addListener($listener);
+                    }
+                }
+            }
+        }
+        return $container;
     }
 
     /**

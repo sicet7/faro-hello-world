@@ -3,6 +3,7 @@
 namespace Sicet7\Faro\Swoole\Commands;
 
 use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Core\Attributes\Name;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
 use Sicet7\Faro\Swoole\Http\Server\Handler;
 use Symfony\Component\Console\Command\Command;
@@ -11,6 +12,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[Name('swoole:server:start')]
 class StartCommand extends Command
 {
     public const DEFAULT_PORT = 5000;
