@@ -2,6 +2,9 @@
 
 namespace Sicet7\Faro\Event;
 
+use DI\DependencyException;
+use DI\FactoryInterface;
+use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Event\Attributes\ListensTo;
 use Sicet7\Faro\Event\Exceptions\EventListenerException;
@@ -16,34 +19,46 @@ class ListenerProvider implements ListenerProviderInterface
     private ContainerInterface $container;
 
     /**
-     * @var string[]
+     * @var array[]
      */
     private array $listeners = [];
 
     /**
+     * @var FactoryInterface
+     */
+    private FactoryInterface $factory;
+
+    /**
      * ListenerContainer constructor.
      * @param ContainerInterface $container
+     * @param FactoryInterface $factory
      */
-    public function __construct(ContainerInterface $container)
-    {
+    public function __construct(
+        ContainerInterface $container,
+        FactoryInterface $factory
+    ) {
         $this->container = $container;
+        $this->factory = $factory;
     }
 
     /**
      * @param object $event
      * @return iterable
+     * @throws DependencyException
+     * @throws NotFoundException
      */
     public function getListenersForEvent(object $event): iterable
     {
         $fqn = get_class($event);
+        if (!isset($this->listeners[$fqn]) || empty($this->listeners[$fqn])) {
+            return [];
+        }
         $listeners = [];
-        foreach ($this->listeners as $listener => $eventFqn) {
-            if ($fqn == $eventFqn) {
-                $listeners[] = [
-                    $this->container->get($listener),
-                    'execute',
-                ];
-            }
+        foreach ($this->listeners[$fqn] as $listener => $makeNew) {
+            $listeners[] = [
+                ($makeNew ? $this->factory->make($listener) : $this->container->get($listener)),
+                'execute',
+            ];
         }
         return $listeners;
     }
@@ -51,7 +66,7 @@ class ListenerProvider implements ListenerProviderInterface
     /**
      * @param string $listener
      * @return $this
-     * @throws EventListenerException|\ReflectionException
+     * @throws \ReflectionException|EventListenerException
      */
     public function addListener(string $listener): ListenerProvider
     {
@@ -64,16 +79,18 @@ class ListenerProvider implements ListenerProviderInterface
             throw new EventListenerException('Event Listener: "' . $listener . '" not found in container.');
         }
         $reflectionClass = new \ReflectionClass($listener);
-        $eventFqn = null;
         foreach ($reflectionClass->getAttributes(ListensTo::class) as $attribute) {
-            $attributeInstance = $attribute->newInstance();
-            if ($attributeInstance instanceof ListensTo) {
-                $eventFqn = $attributeInstance->getEventFqn();
-                break;
+            if (
+                ($attributeInstance = $attribute->newInstance()) instanceof ListensTo &&
+                ($eventFqn = $attributeInstance->getEventFqn()) !== null &&
+                class_exists($eventFqn)
+            ) {
+                /** @var ListensTo $attributeInstance */
+                if (!array_key_exists($eventFqn, $this->listeners) || !is_array($this->listeners[$eventFqn])) {
+                    $this->listeners[$eventFqn] = [];
+                }
+                $this->listeners[$eventFqn][$listener] = $attributeInstance->shouldMakeNew();
             }
-        }
-        if ($eventFqn !== null && class_exists($eventFqn)) {
-            $this->listeners[$listener] = $eventFqn;
         }
         return $this;
     }
@@ -84,8 +101,10 @@ class ListenerProvider implements ListenerProviderInterface
      */
     public function removeListener(string $listener): ListenerProvider
     {
-        if (array_key_exists($listener, $this->listeners)) {
-            unset($this->listeners[$listener]);
+        foreach ($this->listeners as $event => $listeners) {
+            if (isset($listeners[$listener])) {
+                unset($this->listeners[$event][$listener]);
+            }
         }
         return $this;
     }

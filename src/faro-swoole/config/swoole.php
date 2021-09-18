@@ -67,7 +67,9 @@ return [
     // protocol
     'open_http_protocol' => true,
     'open_http2_protocol' => true,
-    'open_websocket_protocol' => false, // Requires "onMessage" callback.
+
+    // Requires "onMessage" callback.
+    'open_websocket_protocol' => false,
 
     // to enable & configure SSL see Swoole configuration.
 

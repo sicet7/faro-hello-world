@@ -2,7 +2,7 @@
 
 namespace Sicet7\Faro\Swoole\Http\Server;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
 use Swoole\Http\Server;
 
@@ -37,23 +37,22 @@ class Handler
     }
 
     /**
-     * @param ConfigMap $configMap
+     * @param Config $config
      * @throws SwooleException
      * @return void
      */
-    public function configure(ConfigMap $configMap): void
+    public function configure(Config $config): void
     {
-        $config = [];
-        if ($configMap->has(self::CONFIG_KEY)) {
-            $config = $configMap->get(self::CONFIG_KEY);
-            $config['daemonize'] = 0;
+        $configArray = [];
+        if ($config->has(self::CONFIG_KEY)) {
+            $configArray = $config->get(self::CONFIG_KEY);
+            $configArray['daemonize'] = 0;
             // TODO: Find a way of supporting daemonized servers in the future.
         }
         if ($this->server === null) {
             throw new SwooleException('Server not yet initialized!');
         }
-        $this->server->set($config);
-        $this->runner->setConfig($configMap->readMap());
+        $this->server->set($configArray);
     }
 
     /**

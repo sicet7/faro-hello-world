@@ -2,15 +2,15 @@
 
 namespace Sicet7\Faro\Config\Definitions;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 interface VariableDefinitionInterface
 {
     /**
-     * @param ConfigMap $configMap
+     * @param ContainerInterface $container
      * @return mixed
      * @throws ConfigException
      */
-    public function resolve(ConfigMap $configMap): mixed;
+    public function resolve(ContainerInterface $container): mixed;
 }

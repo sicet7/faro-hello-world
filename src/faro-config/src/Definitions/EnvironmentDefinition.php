@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sicet7\Faro\Config\Definitions;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class EnvironmentDefinition implements VariableDefinitionInterface
@@ -47,11 +47,11 @@ class EnvironmentDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @param ConfigMap $configMap
+     * @param ContainerInterface $container
      * @return mixed
      * @throws ConfigException
      */
-    public function resolve(ConfigMap $configMap): mixed
+    public function resolve(ContainerInterface $container): mixed
     {
         if (!($this->cachedValue instanceof EnvironmentDefinition)) {
             return $this->cachedValue;
@@ -69,7 +69,7 @@ class EnvironmentDefinition implements VariableDefinitionInterface
             ));
         }
         if ($this->defaultValue instanceof VariableDefinitionInterface) {
-            return $this->cachedValue = $this->defaultValue->resolve($configMap);
+            return $this->cachedValue = $this->defaultValue->resolve($container);
         }
         return $this->cachedValue = $this->defaultValue;
     }

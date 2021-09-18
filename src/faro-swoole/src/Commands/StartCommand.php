@@ -2,7 +2,7 @@
 
 namespace Sicet7\Faro\Swoole\Commands;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\Attributes\Name;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
 use Sicet7\Faro\Swoole\Http\Server\Handler;
@@ -23,24 +23,24 @@ class StartCommand extends Command
     private Handler $serverHandler;
 
     /**
-     * @var ConfigMap
+     * @var Config
      */
-    private ConfigMap $configMap;
+    private Config $config;
 
     /**
      * StartCommand constructor.
      * @param Handler $serverHandler
-     * @param ConfigMap $configMap
+     * @param Config $config
      * @param string|null $name
      */
     public function __construct(
         Handler $serverHandler,
-        ConfigMap $configMap,
+        Config $config,
         string $name = null
     ) {
         parent::__construct($name);
         $this->serverHandler = $serverHandler;
-        $this->configMap = $configMap;
+        $this->config = $config;
     }
 
     /**
@@ -72,7 +72,7 @@ class StartCommand extends Command
         $ip = $this->getIp($ipAndPort);
         $port = $this->getPort($ipAndPort);
         $this->serverHandler->init($ip, $port, false);
-        $this->serverHandler->configure($this->configMap);
+        $this->serverHandler->configure($this->config);
         $this->serverHandler->start();
         return 0;
     }

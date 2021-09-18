@@ -3,6 +3,7 @@
 namespace Sicet7\Faro\Event;
 
 use DI\ContainerBuilder;
+use DI\FactoryInterface;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Invoker\ParameterResolver\DefaultValueResolver;
@@ -47,7 +48,10 @@ class Module extends AbstractModule implements BeforeBuildInterface
                         create(DefaultValueResolver::class),
                     ])),
             ListenerProvider::class => create(ListenerProvider::class)
-                ->constructor(get(ContainerInterface::class)),
+                ->constructor(
+                    get(ContainerInterface::class),
+                    get(FactoryInterface::class),
+                ),
             ListenerProviderInterface::class => get(ListenerProvider::class),
             PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
             Dispatcher::class => create(Dispatcher::class)
@@ -58,6 +62,7 @@ class Module extends AbstractModule implements BeforeBuildInterface
 
     /**
      * @param ContainerInterface $container
+     * @return void
      */
     public static function setup(ContainerInterface $container): void
     {
@@ -75,6 +80,7 @@ class Module extends AbstractModule implements BeforeBuildInterface
     /**
      * @param ModuleList $moduleList
      * @param ContainerBuilder $containerBuilder
+     * @return void
      */
     public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
     {

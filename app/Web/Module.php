@@ -2,6 +2,7 @@
 
 namespace App\Web;
 
+use App\Web\Routes\ConfigAction;
 use App\Web\Routes\HelloWorld;
 use App\Web\Routes\Ping;
 use Sicet7\Faro\Core\AbstractModule;
@@ -43,6 +44,7 @@ class Module extends AbstractModule implements HasRoutesInterface
         return [
             HelloWorld::class,
             Ping::class,
+            ConfigAction::class,
         ];
     }
 }

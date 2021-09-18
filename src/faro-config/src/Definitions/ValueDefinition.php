@@ -2,8 +2,7 @@
 
 namespace Sicet7\Faro\Config\Definitions;
 
-use Sicet7\Faro\Config\ConfigMap;
-use Sicet7\Faro\Config\Exceptions\ConfigException;
+use Psr\Container\ContainerInterface;
 
 class ValueDefinition implements VariableDefinitionInterface
 {
@@ -22,11 +21,11 @@ class ValueDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @param ConfigMap $configMap
+     * @param ContainerInterface $container
      * @return mixed
      */
-    public function resolve(ConfigMap $configMap): mixed
+    public function resolve(ContainerInterface $container): mixed
     {
-        return $configMap->get($this->configPath);
+        return $container->get($this->configPath);
     }
 }

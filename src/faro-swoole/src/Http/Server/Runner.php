@@ -6,10 +6,7 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Sicet7\Faro\Config\ConfigMap;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Sicet7\Faro\Config\Exceptions\ConfigException;
-use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
@@ -29,20 +26,6 @@ class Runner
      * @var ContainerInterface|null
      */
     private ?ContainerInterface $container = null;
-
-    /**
-     * @var array|null
-     */
-    private ?array $config = null;
-
-    /**
-     * @param array|null $config
-     * @return void
-     */
-    public function setConfig(?array $config): void
-    {
-        $this->config = $config;
-    }
 
     /**
      * @param Server $server
@@ -66,7 +49,7 @@ class Runner
      * @param Server $server
      * @param int $workerId
      * @return void
-     * @throws NotFoundException|ConfigException|ModuleException|ContainerException|DependencyException
+     * @throws NotFoundException|ModuleException|DependencyException
      */
     public function onWorkerStart(Server $server, int $workerId): void
     {
@@ -75,10 +58,6 @@ class Runner
             'swoole.worker.id' => $workerId,
             Psr17Factory::class => create(Psr17Factory::class),
         ];
-        if (!empty($this->config)) {
-            $customDefinitions[ConfigMap::class] = new ConfigMap();
-            $customDefinitions[ConfigMap::class]->buildMap($this->config);
-        }
         $this->container = ModuleContainer::buildContainer($customDefinitions);
         $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
     }
@@ -86,8 +65,6 @@ class Runner
     /**
      * @param Request $request
      * @param Response $response
-     * @throws DependencyException
-     * @throws NotFoundException
      * @return void
      */
     public function onRequest(Request $request, Response $response): void
@@ -114,7 +91,6 @@ class Runner
     /**
      * @param Server $server
      * @param int $workerId
-     * @throws DependencyException|NotFoundException
      * @return void
      */
     public function onWorkerStop(Server $server, int $workerId): void

@@ -5,7 +5,7 @@ namespace Sicet7\Faro\Event\Attributes;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 class ListensTo
 {
     /**

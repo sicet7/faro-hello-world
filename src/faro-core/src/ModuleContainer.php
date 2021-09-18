@@ -7,23 +7,17 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Exception\ContainerException;
-use Sicet7\Faro\Core\Exception\ModuleContainerException;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\Interfaces\AfterBuildInterface;
 use Sicet7\Faro\Core\Interfaces\AfterSetupInterface;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 
-abstract class ModuleContainer
+class ModuleContainer
 {
     /**
      * @var array
      */
     private static array $moduleList = [];
-
-    /**
-     * @var array
-     */
-    private static array $moduleExtensionLoaders = [];
 
     /**
      * @param string $moduleFqn
@@ -102,7 +96,13 @@ abstract class ModuleContainer
                     'Module: "' . $module . '" does not inherit from: "' . AbstractModule::class . '"'
                 );
             }
-            $newModuleList[$module::getName()] = $module;
+            $name = $module::getName();
+            if (array_key_exists($name, $newModuleList)) {
+                throw new ModuleException(
+                    'Module name already taken: "' . $name . '".'
+                );
+            }
+            $newModuleList[$name] = $module;
         }
         static::setModuleList($newModuleList);
     }
@@ -116,12 +116,18 @@ abstract class ModuleContainer
      */
     public static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
+        if (class_exists('App\\Module')) {
+            static::tryRegisterModule('App\\Module');
+        }
+        foreach (self::$moduleList[self::class] as $module) {
+            static::tryRegisterModule($module);
+        }
         self::resolveModuleList();
         $loadedModules = [];
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->useAutowiring(false);
         $containerBuilder->useAnnotations(false);
-        $moduleList = self::getModuleList();
+        $moduleList = static::getModuleList();
         foreach ($moduleList as $moduleName => $moduleFqn) {
             self::loadModule($moduleList, $moduleFqn, $containerBuilder, $loadedModules);
         }
@@ -161,43 +167,6 @@ abstract class ModuleContainer
 
         return $container;
     }
-
-    /**
-     * @param array $customDefinitions
-     * @return ContainerInterface
-     * @throws ModuleException|ContainerException
-     */
-    /*public static function getContainer(array $customDefinitions = []): ContainerInterface
-    {
-        if (empty(static::getModuleList())) {
-            throw new ContainerException('Could not create empty container.');
-        }
-        $customDefinitions = array_merge([
-            ListenerProvider::class => create(ListenerProvider::class)
-                ->constructor(get(ContainerInterface::class)),
-
-            ListenerProviderInterface::class => get(ListenerProvider::class),
-            PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
-
-            Dispatcher::class => create(Dispatcher::class)
-                ->constructor(get(ListenerProviderInterface::class)),
-            PsrEventDispatcherInterface::class => get(Dispatcher::class),
-        ], $customDefinitions);
-        self::resolveModuleList();
-        $container = static::buildContainer($customDefinitions);
-        if ($container->has(ModuleList::class)) {
-            $moduleList = $container->has(ModuleList::class);
-            $listenerContainer = $container->get(ListenerProviderInterface::class);
-            foreach ($moduleList->getLoadedModules() as $module) {
-                if (is_subclass_of($module, HasListenersInterface::class)) {
-                    foreach ($module::getListeners() as $listener) {
-                        $listenerContainer->addListener($listener);
-                    }
-                }
-            }
-        }
-        return $container;
-    }*/
 
     /**
      * @param string[] $moduleList
@@ -274,54 +243,5 @@ abstract class ModuleContainer
         }
         $moduleFqn::setup($container);
         $setupModules[$moduleFqn::getName()] = $moduleFqn;
-    }
-
-    /**
-     * @param string $loaderFqn
-     * @return void
-     * @throws ModuleContainerException
-     */
-    public static function registerModuleExtensionLoader(string $loaderFqn): void
-    {
-        if (!is_subclass_of($loaderFqn, AbstractModuleExtensionLoader::class)) {
-            throw new ModuleContainerException(
-                'Module Extension Loader must extend "' . AbstractModuleExtensionLoader::class . '".'
-            );
-        }
-        if (in_array($loaderFqn, static::getModuleExtensionLoaders())) {
-            throw new ModuleContainerException(
-                'Module Extension Loader is already registered: "' . $loaderFqn . '".'
-            );
-        }
-        static::addModuleExtensionLoader($loaderFqn);
-    }
-
-    /**
-     * @return array
-     */
-    public static function getModuleExtensionLoaders(): array
-    {
-        if (
-            !isset(self::$moduleExtensionLoaders[static::class]) ||
-            !is_array(self::$moduleExtensionLoaders[static::class])
-        ) {
-            self::$moduleExtensionLoaders[static::class] = [];
-        }
-        return self::$moduleExtensionLoaders[static::class];
-    }
-
-    /**
-     * @param string $loaderFqn
-     * @return void
-     */
-    protected static function addModuleExtensionLoader(string $loaderFqn): void
-    {
-        if (
-            !isset(self::$moduleExtensionLoaders[static::class]) ||
-            !is_array(self::$moduleExtensionLoaders[static::class])
-        ) {
-            self::$moduleExtensionLoaders[static::class] = [];
-        }
-        self::$moduleExtensionLoaders[static::class][] = $loaderFqn;
     }
 }

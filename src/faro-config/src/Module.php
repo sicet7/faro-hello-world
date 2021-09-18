@@ -2,18 +2,13 @@
 
 namespace Sicet7\Faro\Config;
 
-use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Config\Commands\ShowCommand;
-use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
+use DI\ContainerBuilder;
+use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\InputOption;
+use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
+use Sicet7\Faro\Core\ModuleList;
 
-use function DI\create;
-use function DI\get;
-
-class Module extends AbstractModule implements HasCommandsInterface, HasListenersInterface
+class Module extends AbstractModule implements BeforeBuildInterface
 {
     /**
      * @return string
@@ -24,62 +19,58 @@ class Module extends AbstractModule implements HasCommandsInterface, HasListener
     }
 
     /**
-     * @return string[]
+     * @param ModuleList $moduleList
+     * @param ContainerBuilder $containerBuilder
+     * @return void
+     * @throws Exceptions\ConfigException
      */
-    public static function getDependencies(): array
+    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
     {
-        return [
-            'faro-console',
-        ];
+        $config = [];
+        $processed = [];
+        foreach ($moduleList->getLoadedModules() as $loadedModule) {
+            self::loadConfig($loadedModule, $processed, $config, $moduleList);
+        }
+        unset($processed);
+        $containerBuilder->addDefinitions([
+            Config::class => new Config($config),
+        ]);
     }
 
     /**
-     * @return string[]
-     */
-    public static function getCommands(): array
-    {
-        return [
-            ShowCommand::class,
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function getDefinitions(): array
-    {
-        return [
-            ConfigMap::class => create(ConfigMap::class),
-        ];
-    }
-
-    /**
-     * @param ContainerInterface $container
+     * @param string $module
+     * @param array $processed
+     * @param array $config
+     * @param ModuleList $moduleList
      * @return void
      */
-    public static function setup(ContainerInterface $container): void
-    {
-        /** @var Application $application */
-        $application = $container->get(Application::class);
-
-        $application->getDefinition()->addOption(
-            new InputOption(
-                'config',
-                null,
-                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'Path to configuration directory or file("ini" or "php" file)',
-                []
-            )
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public static function getListeners(): array
-    {
-        return [
-            ConfigLoader::class
-        ];
+    private static function loadConfig(
+        string $module,
+        array &$processed,
+        array &$config,
+        ModuleList $moduleList
+    ): void {
+        if (in_array($module, $processed)) {
+            return;
+        }
+        $modules = $moduleList->getLoadedModules();
+        /** @var AbstractModule $module */
+        $dependencies = $module::getDependencies();
+        if (!empty($dependencies)) {
+            foreach ($dependencies as $dependency) {
+                self::loadConfig($modules[$dependency], $processed, $config, $moduleList);
+            }
+        }
+        if (is_subclass_of($module, HasConfigInterface::class)) {
+            foreach ($module::getConfigPaths() as $configPath) {
+                $configData = Config::readFromPath($configPath);
+                if (is_array($configData)) {
+                    $tmp = $config;
+                    $tmp = array_merge($tmp, $configData);
+                    $config = $tmp;
+                }
+            }
+        }
+        $processed[] = $module;
     }
 }

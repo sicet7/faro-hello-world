@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\Swoole;
 
+use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
@@ -9,7 +10,7 @@ use Sicet7\Faro\Swoole\Http\Server\Handler;
 
 use function DI\create;
 
-class Module extends AbstractModule implements HasCommandsInterface
+class Module extends AbstractModule implements HasCommandsInterface, HasConfigInterface
 {
     /**
      * @return string
@@ -55,6 +56,16 @@ class Module extends AbstractModule implements HasCommandsInterface
     {
         return [
             StartCommand::class,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getConfigPaths(): array
+    {
+        return [
+            dirname(__DIR__) . '/config/swoole.php',
         ];
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sicet7\Faro\Config\Definitions;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 
 class ConcatDefinition implements VariableDefinitionInterface
@@ -24,16 +24,16 @@ class ConcatDefinition implements VariableDefinitionInterface
     }
 
     /**
-     * @param ConfigMap $configMap
+     * @param ContainerInterface $container
      * @return mixed
      * @throws ConfigException
      */
-    public function resolve(ConfigMap $configMap): mixed
+    public function resolve(ContainerInterface $container): mixed
     {
         $resolvedItems = [];
         foreach ($this->concatItems as $key => $concatItem) {
             if ($concatItem instanceof VariableDefinitionInterface) {
-                $concatItem = $concatItem->resolve($configMap);
+                $concatItem = $concatItem->resolve($container);
             }
             $resolvedItems[$key] = $concatItem;
         }

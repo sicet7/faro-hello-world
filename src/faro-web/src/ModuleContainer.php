@@ -7,7 +7,6 @@ use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
-use Sicet7\Faro\Event\Module as EventModule;
 
 class ModuleContainer extends BaseModuleContainer
 {
@@ -23,7 +22,6 @@ class ModuleContainer extends BaseModuleContainer
         if (class_exists('App\\Web\\Module')) {
             static::tryRegisterModule('App\\Web\\Module');
         }
-        static::tryRegisterModule(EventModule::class);
         return parent::buildContainer($customDefinitions);
     }
 }

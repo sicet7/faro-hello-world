@@ -36,13 +36,16 @@
             "Sicet7\\Faro\\Web\\": "src/faro-web/src/",
             "Sicet7\\Faro\\Swoole\\": "src/faro-swoole/src/",
             "Sicet7\\Faro\\Config\\": "src/faro-config/src/",
+            "Sicet7\\Faro\\Config\\Console\\": "src/faro-config-console/src/",
             "Sicet7\\Faro\\Slim\\": "src/faro-slim/src/"
         },
         "files": [
+            "src/faro-event/module.php",
             "src/faro-console/module.php",
             "src/faro-swoole/module.php",
             "src/faro-config/module.php",
             "src/faro-config/functions.php",
+            "src/faro-config-console/module.php",
             "src/faro-slim/module.php"
         ]
     },

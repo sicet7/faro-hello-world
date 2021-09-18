@@ -43,17 +43,6 @@ class Module extends AbstractModule implements BeforeBuildInterface
         ];
     }
 
-    /*
-            ListenerProvider::class => create(ListenerProvider::class)
-                ->constructor(get(ContainerInterface::class)),
-
-            ListenerProviderInterface::class => get(ListenerProvider::class),
-            PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
-
-            Dispatcher::class => create(Dispatcher::class)
-                ->constructor(get(ListenerProviderInterface::class)),
-            PsrEventDispatcherInterface::class => get(Dispatcher::class),
-    */
     /**
      * @return array
      */

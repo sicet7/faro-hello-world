@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Sicet7\Faro\Config\Commands;
+namespace Sicet7\Faro\Config\Console\Commands;
 
-use Sicet7\Faro\Config\ConfigMap;
+use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\Attributes\Name;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,21 +19,21 @@ class ShowCommand extends Command
 {
 
     /**
-     * @var ConfigMap
+     * @var Config
      */
-    private ConfigMap $configMap;
+    private Config $config;
 
     /**
      * ShowCommand constructor.
-     * @param ConfigMap $configMap
+     * @param Config $config
      * @param string|null $name
      */
     public function __construct(
-        ConfigMap $configMap,
+        Config $config,
         string $name = null
     ) {
         parent::__construct($name);
-        $this->configMap = $configMap;
+        $this->config = $config;
     }
 
     /**
@@ -63,9 +63,9 @@ class ShowCommand extends Command
 
         $path = $input->getArgument('path');
         if (empty($path)) {
-            $dumper->dump($cloner->cloneVar($this->configMap->readMap()));
+            $dumper->dump($cloner->cloneVar($this->config->getConfig()));
         } else {
-            $dumper->dump($cloner->cloneVar($this->configMap->get($path)));
+            $dumper->dump($cloner->cloneVar($this->config->get($path)));
         }
 
         return static::SUCCESS;

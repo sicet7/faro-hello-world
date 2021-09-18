@@ -5,10 +5,8 @@ namespace Sicet7\Faro\Console;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
-use Sicet7\Faro\Event\Module as EventModule;
 
 class ModuleContainer extends BaseModuleContainer
 {
@@ -24,7 +22,6 @@ class ModuleContainer extends BaseModuleContainer
         if (class_exists('App\\Console\\Module')) {
             static::tryRegisterModule('App\\Console\\Module');
         }
-        static::tryRegisterModule(EventModule::class);
         return parent::buildContainer($customDefinitions);
     }
 }
