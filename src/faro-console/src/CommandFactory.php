@@ -22,7 +22,7 @@ class CommandFactory extends GenericFactory
      * @return object
      * @throws DependencyException
      */
-    public function create(RequestedEntry $entry, string $name = null): object
+    public function create(RequestedEntry $entry, ?string $name = null): object
     {
         $this->providedParameters = [];
         if (!empty($name)) {

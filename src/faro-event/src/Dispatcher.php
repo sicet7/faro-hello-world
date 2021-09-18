@@ -1,6 +1,6 @@
 <?php
 
-namespace Sicet7\Faro\Core\Event;
+namespace Sicet7\Faro\Event;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;

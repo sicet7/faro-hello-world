@@ -1,8 +1,9 @@
 <?php
 
-namespace Sicet7\Faro\Core\Factories;
+namespace Sicet7\Faro\Event\Factories;
 
-use Sicet7\Faro\Core\Interfaces\Event\ListenerInterface;
+use Sicet7\Faro\Core\Factories\GenericFactory;
+use Sicet7\Faro\Event\Interfaces\ListenerInterface;
 
 class ListenerFactory extends GenericFactory
 {

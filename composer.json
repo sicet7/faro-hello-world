@@ -29,7 +29,9 @@
     },
     "autoload": {
         "psr-4": {
+            "App\\": "app/",
             "Sicet7\\Faro\\Core\\": "src/faro-core/src/",
+            "Sicet7\\Faro\\Event\\": "src/faro-event/src/",
             "Sicet7\\Faro\\Console\\": "src/faro-console/src/",
             "Sicet7\\Faro\\Web\\": "src/faro-web/src/",
             "Sicet7\\Faro\\Swoole\\": "src/faro-swoole/src/",
@@ -41,7 +43,6 @@
             "src/faro-swoole/module.php",
             "src/faro-config/module.php",
             "src/faro-config/functions.php",
-            "src/faro-web/module.php",
             "src/faro-slim/module.php"
         ]
     },

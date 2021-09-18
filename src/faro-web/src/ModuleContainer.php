@@ -2,58 +2,28 @@
 
 namespace Sicet7\Faro\Web;
 
-use DI\ContainerBuilder;
+use DI\DependencyException;
+use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
-use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
-use Psr\EventDispatcher\ListenerProviderInterface;
-use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Core\Event\ListenerInterface;
-use Sicet7\Faro\Core\LoadModuleTrait;
-use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
-use Sicet7\Faro\Core\Event\Dispatcher;
-use Sicet7\Faro\Core\Event\ListenerProvider;
-use Sicet7\Faro\Core\Event\ListenerContainerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
-use Sicet7\Faro\Core\ModuleList;
-use Sicet7\Faro\Core\SetupModuleTrait;
-
-use function DI\create;
-use function DI\get;
+use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
+use Sicet7\Faro\Event\Module as EventModule;
 
 class ModuleContainer extends BaseModuleContainer
 {
-    use LoadModuleTrait;
-    use SetupModuleTrait;
-
     /**
      * @param array $customDefinitions
      * @return ContainerInterface
+     * @throws DependencyException
+     * @throws NotFoundException
      * @throws ModuleException
      */
-    protected static function buildContainer(array $customDefinitions = []): ContainerInterface
+    public static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
-        $loadedModules = [];
-        $containerBuilder = new ContainerBuilder();
-        $containerBuilder->useAnnotations(false);
-        $containerBuilder->useAutowiring(false);
-        $moduleList = self::getModuleList();
-        foreach ($moduleList as $moduleFqn) {
-            self::loadModule($moduleList, $moduleFqn, $containerBuilder, $loadedModules);
+        if (class_exists('App\\Web\\Module')) {
+            static::tryRegisterModule('App\\Web\\Module');
         }
-
-        $containerBuilder->addDefinitions([
-            ModuleList::class => new ModuleList($loadedModules),
-        ]);
-
-        if (!empty($customDefinitions)) {
-            $containerBuilder->addDefinitions($customDefinitions);
-        }
-
-        $container = $containerBuilder->build();
-        $setupModules = [];
-        foreach ($loadedModules as $loadedModule) {
-            self::setupModule($loadedModules, $loadedModule, $container, $setupModules);
-        }
-        return $container;
+        static::tryRegisterModule(EventModule::class);
+        return parent::buildContainer($customDefinitions);
     }
 }

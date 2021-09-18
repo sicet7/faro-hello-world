@@ -5,10 +5,10 @@ namespace Sicet7\Faro\Swoole\Http\Server;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\ConfigMap;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
-use Sicet7\Faro\Core\Event\Dispatcher;
 use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
@@ -79,8 +79,8 @@ class Runner
             $customDefinitions[ConfigMap::class] = new ConfigMap();
             $customDefinitions[ConfigMap::class]->buildMap($this->config);
         }
-        $this->container = ModuleContainer::getContainer($customDefinitions);
-        $this->container->get(Dispatcher::class)->dispatch(new WorkerStart($server, $workerId));
+        $this->container = ModuleContainer::buildContainer($customDefinitions);
+        $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
     }
 
     /**
@@ -99,7 +99,7 @@ class Runner
             $psr17Factory,
             $psr17Factory
         );
-        $eventDispatcher = $this->container->get(Dispatcher::class);
+        $eventDispatcher = $this->container->get(EventDispatcherInterface::class);
         $requestEvent = new RequestEvent($requestConverter->createFromSwoole($request));
         $eventDispatcher->dispatch($requestEvent);
         if ($requestEvent->getResponse() === null) {
@@ -119,7 +119,7 @@ class Runner
      */
     public function onWorkerStop(Server $server, int $workerId): void
     {
-        $this->container->get(Dispatcher::class)->dispatch(new WorkerStop($server, $workerId));
+        $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStop($server, $workerId));
         $this->container = null;
     }
 }

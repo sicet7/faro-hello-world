@@ -1,6 +1,7 @@
 <?php
 
-namespace Sicet7\Faro\Core\Attributes;
+
+namespace Sicet7\Faro\Event\Attributes;
 
 use Attribute;
 
@@ -15,19 +16,19 @@ class ListensTo
     /**
      * @var bool
      */
-    private bool $newInstance;
+    private bool $new;
 
     /**
      * ListensTo constructor.
      * @param string $eventFqn
-     * @param bool $newInstance true, if a new instance of the listener should be made for every event.
+     * @param bool $new true, if a new instance of the listener should be made for every event.
      */
     public function __construct(
         string $eventFqn,
-        bool $newInstance = false
+        bool $new = false
     ) {
         $this->eventFqn = $eventFqn;
-        $this->newInstance = $newInstance;
+        $this->new = $new;
     }
 
     /**
@@ -41,8 +42,8 @@ class ListensTo
     /**
      * @return bool
      */
-    public function getNewInstance(): bool
+    public function shouldMakeNew(): bool
     {
-        return $this->newInstance;
+        return $this->new;
     }
 }

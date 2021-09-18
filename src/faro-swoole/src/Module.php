@@ -16,7 +16,7 @@ class Module extends AbstractModule implements HasCommandsInterface
      */
     public static function getName(): string
     {
-        return 'swoole';
+        return 'faro-swoole';
     }
 
     /**
@@ -43,8 +43,8 @@ class Module extends AbstractModule implements HasCommandsInterface
     public static function getDependencies(): array
     {
         return [
-            'console',
-            'config',
+            'faro-console',
+            'faro-config',
         ];
     }
 

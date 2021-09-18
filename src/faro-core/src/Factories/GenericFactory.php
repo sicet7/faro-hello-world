@@ -36,6 +36,9 @@ abstract class GenericFactory
         }
 
         try {
+            if (!method_exists($entryName, '__construct')) {
+                return new $entryName();
+            }
             $args = $this->resolver->getParameters(
                 new \ReflectionMethod($entryName, '__construct'),
                 $this->getProvidedParameters(),
@@ -52,7 +55,7 @@ abstract class GenericFactory
      * @param string $fqn
      * @return bool
      */
-    private function inWhitelist(string $fqn): bool
+    protected function inWhitelist(string $fqn): bool
     {
         $whitelist = $this->getClassWhitelist();
         if (empty($whitelist)) {
@@ -60,7 +63,7 @@ abstract class GenericFactory
         }
         $return = false;
         foreach ($whitelist as $whitelistedFqn) {
-            if (is_subclass_of($fqn, $whitelistedFqn)) {
+            if ($fqn == $whitelistedFqn || is_subclass_of($fqn, $whitelistedFqn)) {
                 $return = true;
                 break;
             }

@@ -2,37 +2,58 @@
 
 namespace Sicet7\Faro\Console;
 
+use DI\ContainerBuilder;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Invoker\ParameterResolver\DefaultValueResolver;
 use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
-use Psr\EventDispatcher\ListenerProviderInterface as PsrListenerProviderInterface;
 use Sicet7\Faro\Console\Event\SymfonyDispatcher;
+use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Core\Event\Dispatcher;
-use Sicet7\Faro\Core\Event\ListenerProvider;
-use Sicet7\Faro\Core\Interfaces\Event\ListenerProviderInterface;
-use Sicet7\Faro\Core\Interfaces\HasListenersInterface;
+use Sicet7\Faro\Core\Exception\ContainerException;
+use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
+use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
 
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule
+class Module extends AbstractModule implements BeforeBuildInterface
 {
     /**
      * @return string
      */
     public static function getName(): string
     {
-        return 'console';
+        return 'faro-console';
     }
 
+    /**
+     * @return string[]
+     */
+    public static function getDependencies(): array
+    {
+        return [
+            'faro-event'
+        ];
+    }
+
+    /*
+            ListenerProvider::class => create(ListenerProvider::class)
+                ->constructor(get(ContainerInterface::class)),
+
+            ListenerProviderInterface::class => get(ListenerProvider::class),
+            PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
+
+            Dispatcher::class => create(Dispatcher::class)
+                ->constructor(get(ListenerProviderInterface::class)),
+            PsrEventDispatcherInterface::class => get(Dispatcher::class),
+    */
     /**
      * @return array
      */
@@ -47,15 +68,6 @@ class Module extends AbstractModule
                             ->constructor(get(ContainerInterface::class)),
                         create(DefaultValueResolver::class),
                     ])),
-            ListenerProvider::class => create(ListenerProvider::class)
-                ->constructor(get(ContainerInterface::class)),
-
-            ListenerProviderInterface::class => get(ListenerProvider::class),
-            PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),
-
-            Dispatcher::class => create(Dispatcher::class)
-                ->constructor(get(ListenerProviderInterface::class)),
-            PsrEventDispatcherInterface::class => get(Dispatcher::class),
             SymfonyEventDispatcherInterface::class => create(SymfonyDispatcher::class)
                 ->constructor(get(PsrEventDispatcherInterface::class)),
             Application::class => function (
@@ -71,19 +83,28 @@ class Module extends AbstractModule
     }
 
     /**
-     * @param ContainerInterface $container
+     * @param ModuleList $moduleList
+     * @param ContainerBuilder $containerBuilder
      * @return void
+     * @throws ContainerException
      */
-    public static function setup(ContainerInterface $container): void
+    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
     {
-        $listenerContainer = $container->get(ListenerProviderInterface::class);
-        foreach ($container->get(ModuleList::class)->getLoadedModules() as $moduleFqn) {
-            if (!is_subclass_of($moduleFqn, HasListenersInterface::class)) {
-                continue;
-            }
-            foreach ($moduleFqn::getListeners() as $listener) {
-                $listenerContainer->addListener($listener);
+        $commandFactoryMapper = new CommandFactoryMapper();
+
+        foreach ($moduleList->getLoadedModules() as $moduleFqn) {
+            if (is_subclass_of($moduleFqn, HasCommandsInterface::class)) {
+                foreach ($moduleFqn::getCommands() as $commandFqn) {
+                    $containerBuilder->addDefinitions([
+                        $commandFqn => $commandFactoryMapper->mapCommand($commandFqn),
+                    ]);
+                }
             }
         }
+
+        $containerBuilder->addDefinitions([
+            CommandLoaderInterface::class => create(ContainerCommandLoader::class)
+                ->constructor(get(ContainerInterface::class), $commandFactoryMapper->getMap()),
+        ]);
     }
 }

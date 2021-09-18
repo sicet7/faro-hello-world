@@ -1,12 +1,12 @@
 <?php
 
-namespace Sicet7\Faro\Core\Event;
+namespace Sicet7\Faro\Event;
 
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Core\Attributes\ListensTo;
-use Sicet7\Faro\Core\Exception\EventListenerException;
-use Sicet7\Faro\Core\Interfaces\Event\ListenerInterface;
-use Sicet7\Faro\Core\Interfaces\Event\ListenerProviderInterface;
+use Sicet7\Faro\Event\Attributes\ListensTo;
+use Sicet7\Faro\Event\Exceptions\EventListenerException;
+use Sicet7\Faro\Event\Interfaces\ListenerInterface;
+use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
 
 class ListenerProvider implements ListenerProviderInterface
 {
@@ -51,7 +51,7 @@ class ListenerProvider implements ListenerProviderInterface
     /**
      * @param string $listener
      * @return $this
-     * @throws EventListenerException
+     * @throws EventListenerException|\ReflectionException
      */
     public function addListener(string $listener): ListenerProvider
     {
@@ -88,14 +88,5 @@ class ListenerProvider implements ListenerProviderInterface
             unset($this->listeners[$listener]);
         }
         return $this;
-    }
-
-    /**
-     * @param string $eventFqn
-     * @return string
-     */
-    protected function parseEventFqn(string $eventFqn): string
-    {
-        return trim($eventFqn, "\\ \t\n\r\0\x0B");
     }
 }

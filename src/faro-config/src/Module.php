@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Config\Commands\ShowCommand;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
-use Sicet7\Faro\Core\Interfaces\HasListenersInterface;
+use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -20,7 +20,17 @@ class Module extends AbstractModule implements HasCommandsInterface, HasListener
      */
     public static function getName(): string
     {
-        return 'config';
+        return 'faro-config';
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getDependencies(): array
+    {
+        return [
+            'faro-console',
+        ];
     }
 
     /**
@@ -40,8 +50,6 @@ class Module extends AbstractModule implements HasCommandsInterface, HasListener
     {
         return [
             ConfigMap::class => create(ConfigMap::class),
-            ConfigLoader::class => create(ConfigLoader::class)
-                ->constructor(get(ConfigMap::class)),
         ];
     }
 
@@ -63,16 +71,6 @@ class Module extends AbstractModule implements HasCommandsInterface, HasListener
                 []
             )
         );
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getDependencies(): array
-    {
-        return [
-            'console',
-        ];
     }
 
     /**

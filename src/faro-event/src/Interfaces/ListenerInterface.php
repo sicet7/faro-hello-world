@@ -1,6 +1,6 @@
 <?php
 
-namespace Sicet7\Faro\Core\Interfaces\Event;
+namespace Sicet7\Faro\Event\Interfaces;
 
 interface ListenerInterface
 {
