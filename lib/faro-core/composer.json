@@ -1,0 +1,26 @@
+{
+    "name": "sicet7/faro-core",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The core library of the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "php-di/php-di": "^6.3",
+        "php-di/invoker": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Core\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

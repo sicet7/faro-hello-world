@@ -1,0 +1,37 @@
+{
+    "name": "sicet7/faro-swoole",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The library connecting swoole to the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "ext-swoole": ">=4.6",
+        "ext-posix": "*",
+        "sicet7/faro-config": "*",
+        "sicet7/faro-console": "*",
+        "sicet7/faro-web": "*",
+        "ilexn/swoole-convert-psr7": "^0.3.0",
+        "nyholm/psr7": "^1.4"
+    },
+    "require-dev": {
+        "swoole/ide-helper": "~4.6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Swoole\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

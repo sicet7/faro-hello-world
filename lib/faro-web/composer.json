@@ -1,0 +1,26 @@
+{
+    "name": "sicet7/faro-web",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The web library of the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-core": "*",
+        "sicet7/faro-event": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Web\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

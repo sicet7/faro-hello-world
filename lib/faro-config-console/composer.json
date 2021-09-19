@@ -1,0 +1,30 @@
+{
+    "name": "sicet7/faro-config-console",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "Provides a config reading command to the console.",
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-config": "*",
+        "sicet7/faro-console": "*",
+        "symfony/var-dumper": "^5.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Config\\Console\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

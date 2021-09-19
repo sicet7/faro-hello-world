@@ -6,7 +6,6 @@ use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\Interfaces\AfterBuildInterface;
 use Sicet7\Faro\Core\Interfaces\AfterSetupInterface;

@@ -1,0 +1,34 @@
+{
+    "name": "sicet7/faro-console",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The console library of the faro framework",
+    "bin": [
+        "bin/faro"
+    ],
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-core": "*",
+        "sicet7/faro-event": "*",
+        "symfony/console": "^5.3",
+        "symfony/event-dispatcher-contracts": "^2.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Console\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

@@ -1,0 +1,30 @@
+{
+    "name": "sicet7/faro-slim",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The library connecting slim to the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-web": "*",
+        "nyholm/psr7": "^1.4",
+        "slim/slim": "4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Slim\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "name": "sicet7/faro-event",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The event library of the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-core": "*",
+        "psr/event-dispatcher": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Event\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}
