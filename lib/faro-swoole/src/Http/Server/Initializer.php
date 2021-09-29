@@ -6,7 +6,7 @@ use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
 use Swoole\Http\Server;
 
-class Handler
+class Initializer
 {
     public const CONFIG_KEY = 'swoole';
 

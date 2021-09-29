@@ -5,7 +5,7 @@ namespace Sicet7\Faro\Swoole\Commands;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\Attributes\Name;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
-use Sicet7\Faro\Swoole\Http\Server\Handler;
+use Sicet7\Faro\Swoole\Http\Server\Initializer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,9 +18,9 @@ class StartCommand extends Command
     public const DEFAULT_PORT = 5000;
 
     /**
-     * @var Handler
+     * @var Initializer
      */
-    private Handler $serverHandler;
+    private Initializer $serverHandler;
 
     /**
      * @var Config
@@ -29,12 +29,12 @@ class StartCommand extends Command
 
     /**
      * StartCommand constructor.
-     * @param Handler $serverHandler
+     * @param Initializer $serverHandler
      * @param Config $config
      * @param string|null $name
      */
     public function __construct(
-        Handler $serverHandler,
+        Initializer $serverHandler,
         Config $config,
         string $name = null
     ) {

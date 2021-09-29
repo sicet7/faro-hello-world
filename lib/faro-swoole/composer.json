@@ -10,6 +10,7 @@
         "sicet7/faro-config": "*",
         "sicet7/faro-console": "*",
         "sicet7/faro-web": "*",
+        "sicet7/faro-log": "*",
         "ilexn/swoole-convert-psr7": "^0.3.0",
         "nyholm/psr7": "^1.4"
     },

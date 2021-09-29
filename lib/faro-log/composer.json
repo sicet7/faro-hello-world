@@ -1,0 +1,30 @@
+{
+    "name": "sicet7/faro-log",
+    "version": "0.0.1",
+    "type": "library",
+    "description": "The library logging for the faro framework",
+    "require": {
+        "php": ">=8.0",
+        "sicet7/faro-core": "*",
+        "monolog/monolog": "^2.3",
+        "psr/log": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Log\\": "src/"
+        },
+        "files": [
+            "module.php"
+        ]
+    },
+    "license": "MIT",
+    "homepage": "sicet7.com",
+    "authors": [
+        {
+            "name": "Martin René Sørensen",
+            "email": "composer@sicet7.com",
+            "homepage": "sicet7.com",
+            "role": "Maintainer"
+        }
+    ]
+}

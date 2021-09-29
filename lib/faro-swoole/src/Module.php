@@ -6,7 +6,7 @@ use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
-use Sicet7\Faro\Swoole\Http\Server\Handler;
+use Sicet7\Faro\Swoole\Http\Server\Initializer;
 
 use function DI\create;
 
@@ -34,7 +34,7 @@ class Module extends AbstractModule implements HasCommandsInterface, HasConfigIn
     public static function getDefinitions(): array
     {
         return [
-            Handler::class => create(Handler::class),
+            Initializer::class => create(Initializer::class),
         ];
     }
 
