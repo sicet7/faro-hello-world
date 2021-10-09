@@ -10,6 +10,7 @@ use Invoker\ParameterResolver\DefaultValueResolver;
 use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BuildLock;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
 use Sicet7\Faro\Event\Factories\ListenerFactory;
@@ -50,7 +51,7 @@ class Module extends AbstractModule implements BeforeBuildInterface
             ListenerProvider::class => create(ListenerProvider::class)
                 ->constructor(
                     get(ContainerInterface::class),
-                    get(FactoryInterface::class),
+                    get(BuildLock::class)
                 ),
             ListenerProviderInterface::class => get(ListenerProvider::class),
             PsrListenerProviderInterface::class => get(ListenerProviderInterface::class),

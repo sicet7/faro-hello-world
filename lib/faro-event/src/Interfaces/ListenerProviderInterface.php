@@ -5,14 +5,20 @@ namespace Sicet7\Faro\Event\Interfaces;
 interface ListenerProviderInterface extends \Psr\EventDispatcher\ListenerProviderInterface
 {
     /**
-     * @param string $listener
-     * @return ListenerProviderInterface
+     * @param object $event
+     * @return bool
      */
-    public function addListener(string $listener): ListenerProviderInterface;
+    public function hasListenersForEvent(object $event): bool;
 
     /**
-     * @param string $listener
+     * @param string|ListenerInterface $listener
      * @return ListenerProviderInterface
      */
-    public function removeListener(string $listener): ListenerProviderInterface;
+    public function addListener(string|ListenerInterface $listener): ListenerProviderInterface;
+
+    /**
+     * @param string|ListenerInterface $listener
+     * @return ListenerProviderInterface
+     */
+    public function removeListener(string|ListenerInterface $listener): ListenerProviderInterface;
 }

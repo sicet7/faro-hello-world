@@ -1,5 +1,6 @@
 /faro
 vendor/
+proxies/
 .idea/
 var/log
 var/tmp

@@ -6,10 +6,14 @@ use DI\DependencyException;
 use DI\FactoryInterface;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
+use ReflectionException;
+use Sicet7\Faro\Core\BuildLock;
 use Sicet7\Faro\Event\Attributes\ListensTo;
 use Sicet7\Faro\Event\Exceptions\EventListenerException;
 use Sicet7\Faro\Event\Interfaces\ListenerInterface;
 use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
+use Sicet7\Faro\Event\Interfaces\ListensToInterface;
+use Throwable;
 
 class ListenerProvider implements ListenerProviderInterface
 {
@@ -24,39 +28,37 @@ class ListenerProvider implements ListenerProviderInterface
     private array $listeners = [];
 
     /**
-     * @var FactoryInterface
+     * @var BuildLock
      */
-    private FactoryInterface $factory;
+    private BuildLock $buildLock;
 
     /**
      * ListenerContainer constructor.
      * @param ContainerInterface $container
-     * @param FactoryInterface $factory
+     * @param BuildLock $buildLock
      */
     public function __construct(
         ContainerInterface $container,
-        FactoryInterface $factory
+        BuildLock $buildLock
     ) {
         $this->container = $container;
-        $this->factory = $factory;
+        $this->buildLock = $buildLock;
     }
 
     /**
      * @param object $event
      * @return iterable
-     * @throws DependencyException
-     * @throws NotFoundException
      */
     public function getListenersForEvent(object $event): iterable
     {
         $fqn = get_class($event);
-        if (!isset($this->listeners[$fqn]) || empty($this->listeners[$fqn])) {
+        if (!$this->hasListenersForEvent($event)) {
             return [];
         }
         $listeners = [];
-        foreach ($this->listeners[$fqn] as $listener => $makeNew) {
+        foreach ($this->listeners[$fqn] as $id => $listener) {
             $listeners[] = [
-                ($makeNew ? $this->factory->make($listener) : $this->container->get($listener)),
+                (is_string($listener) ? $this->container->get($listener) : $listener),
                 'execute',
             ];
         }
@@ -64,19 +66,35 @@ class ListenerProvider implements ListenerProviderInterface
     }
 
     /**
-     * @param string $listener
-     * @return $this
-     * @throws \ReflectionException|EventListenerException
+     * @param object $event
+     * @return bool
      */
-    public function addListener(string $listener): ListenerProvider
+    public function hasListenersForEvent(object $event): bool
     {
-        if (!is_subclass_of($listener, ListenerInterface::class)) {
-            throw new EventListenerException(
-                '"' . $listener . '" does not implement: "' . ListenerInterface::class . '"'
-            );
-        }
-        if (!$this->container->has($listener)) {
-            throw new EventListenerException('Event Listener: "' . $listener . '" not found in container.');
+        $eventFqn = get_class($event);
+        return (isset($this->listeners[$eventFqn]) && !empty($this->listeners[$eventFqn]));
+    }
+
+    /**
+     * @param string|ListenerInterface $listener
+     * @return $this
+     * @throws Throwable|EventListenerException
+     */
+    public function addListener(string|ListenerInterface $listener): ListenerProvider
+    {
+        $this->lockCheck();
+        if (is_string($listener)) {
+            if (!is_subclass_of($listener, ListenerInterface::class)) {
+                throw new EventListenerException(
+                    '"' . $listener . '" does not implement: "' . ListenerInterface::class . '"'
+                );
+            }
+            if (!$this->container->has($listener)) {
+                throw new EventListenerException('Event Listener: "' . $listener . '" not found in container.');
+            }
+            $id = $listener;
+        } else {
+            $id = spl_object_id($listener);
         }
         $reflectionClass = new \ReflectionClass($listener);
         foreach ($reflectionClass->getAttributes(ListensTo::class) as $attribute) {
@@ -86,26 +104,50 @@ class ListenerProvider implements ListenerProviderInterface
                 class_exists($eventFqn)
             ) {
                 /** @var ListensTo $attributeInstance */
-                if (!array_key_exists($eventFqn, $this->listeners) || !is_array($this->listeners[$eventFqn])) {
+                if (
+                    !array_key_exists($eventFqn, $this->listeners) ||
+                    !is_array($this->listeners[$eventFqn])
+                ) {
                     $this->listeners[$eventFqn] = [];
                 }
-                $this->listeners[$eventFqn][$listener] = $attributeInstance->shouldMakeNew();
+                $this->listeners[$eventFqn][$id] = $listener;
+            }
+        }
+        if (!is_string($listener) && $listener instanceof ListensToInterface) {
+            foreach ($listener->getEvents() as $eventFqn) {
+                if (class_exists($eventFqn)) {
+                    $this->listeners[$eventFqn][$id] = $listener;
+                }
             }
         }
         return $this;
     }
 
     /**
-     * @param string $listener
+     * @param string|ListenerInterface $listener
      * @return $this
+     * @throws Throwable
      */
-    public function removeListener(string $listener): ListenerProvider
+    public function removeListener(string|ListenerInterface $listener): ListenerProvider
     {
+        $this->lockCheck();
+        $id = (is_string($listener) ? $listener : spl_object_id($listener));
         foreach ($this->listeners as $event => $listeners) {
-            if (isset($listeners[$listener])) {
-                unset($this->listeners[$event][$listener]);
+            if (isset($listeners[$id])) {
+                unset($this->listeners[$event][$id]);
             }
         }
         return $this;
+    }
+
+    /**
+     * @throws \Throwable
+     * @return void
+     */
+    private function lockCheck(): void
+    {
+        $this->buildLock->throwIfLocked(new EventListenerException(
+            'You cannot modify the Listener Stack at Runtime.'
+        ));
     }
 }

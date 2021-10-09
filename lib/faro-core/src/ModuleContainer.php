@@ -133,6 +133,7 @@ class ModuleContainer
         $moduleListContainer = new ModuleList($loadedModules, static::getModuleList());
         $containerBuilder->addDefinitions([
             ModuleList::class => $moduleListContainer,
+            BuildLock::class => new BuildLock(),
         ]);
 
         foreach ($moduleListContainer->getLoadedModules() as $moduleFqn) {
@@ -164,6 +165,7 @@ class ModuleContainer
             }
         }
 
+        $container->get(BuildLock::class)->lock();
         return $container;
     }
 

@@ -14,21 +14,13 @@ class ListensTo
     private string $eventFqn;
 
     /**
-     * @var bool
-     */
-    private bool $new;
-
-    /**
      * ListensTo constructor.
      * @param string $eventFqn
-     * @param bool $new true, if a new instance of the listener should be made for every event.
      */
     public function __construct(
-        string $eventFqn,
-        bool $new = false
+        string $eventFqn
     ) {
         $this->eventFqn = $eventFqn;
-        $this->new = $new;
     }
 
     /**
@@ -37,13 +29,5 @@ class ListensTo
     public function getEventFqn(): string
     {
         return $this->eventFqn;
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldMakeNew(): bool
-    {
-        return $this->new;
     }
 }

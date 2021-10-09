@@ -26,12 +26,10 @@
         ]
     },
     "license": "MIT",
-    "homepage": "sicet7.com",
     "authors": [
         {
             "name": "Martin René Sørensen",
             "email": "composer@sicet7.com",
-            "homepage": "sicet7.com",
             "role": "Maintainer"
         }
     ]

@@ -6,7 +6,8 @@
     "require": {
         "sicet7/faro-swoole": "*",
         "sicet7/faro-slim": "*",
-        "sicet7/faro-config-console": "*"
+        "sicet7/faro-config-console": "*",
+        "sicet7/faro-orm": "*"
     },
     "require-dev": {
         "swoole/ide-helper": "~4.6.4",
@@ -74,6 +75,12 @@
         }, {
             "type": "path",
             "url": "./lib/faro-log/",
+            "options": {
+                "symlink": false
+            }
+        }, {
+            "type": "path",
+            "url": "./lib/faro-orm/",
             "options": {
                 "symlink": false
             }

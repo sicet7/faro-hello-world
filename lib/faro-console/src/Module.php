@@ -83,10 +83,13 @@ class Module extends AbstractModule implements BeforeBuildInterface
 
         foreach ($moduleList->getLoadedModules() as $moduleFqn) {
             if (is_subclass_of($moduleFqn, HasCommandsInterface::class)) {
-                foreach ($moduleFqn::getCommands() as $commandFqn) {
-                    $containerBuilder->addDefinitions([
-                        $commandFqn => $commandFactoryMapper->mapCommand($commandFqn),
-                    ]);
+                foreach ($moduleFqn::getCommands() as $name => $commandFqn) {
+                    $containerBuilder->addDefinitions(
+                        $commandFactoryMapper->mapCommand(
+                            $commandFqn,
+                            (is_string($name) && !is_numeric($name) ? $name : null)
+                        )
+                    );
                 }
             }
         }

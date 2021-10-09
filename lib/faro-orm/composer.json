@@ -1,17 +1,20 @@
 {
-    "name": "sicet7/faro-config-console",
+    "name": "sicet7/faro-orm",
     "version": "0.0.1",
     "type": "library",
-    "description": "Provides a config reading command to the console.",
+    "description": "The library containing the ORM for the Faro Framework.",
     "require": {
         "php": ">=8.0",
-        "sicet7/faro-config": "*",
+        "sicet7/faro-core": "*",
         "sicet7/faro-console": "*",
-        "symfony/var-dumper": "^5.3"
+        "sicet7/faro-event": "*",
+        "sicet7/faro-log": "*",
+        "doctrine/orm": "^2.10",
+        "doctrine/migrations": "^3.2"
     },
     "autoload": {
         "psr-4": {
-            "Sicet7\\Faro\\Config\\Console\\": "src/"
+            "Sicet7\\Faro\\ORM\\": "src/"
         },
         "files": [
             "module.php"

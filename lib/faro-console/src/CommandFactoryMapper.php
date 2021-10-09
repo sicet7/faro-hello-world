@@ -3,6 +3,7 @@
 namespace Sicet7\Faro\Console;
 
 use DI\Definition\Helper\FactoryDefinitionHelper;
+use ReflectionException;
 use Sicet7\Faro\Core\Attributes\Name;
 use Sicet7\Faro\Core\Exception\ContainerException;
 use Symfony\Component\Console\Command\Command;
@@ -18,10 +19,11 @@ class CommandFactoryMapper
 
     /**
      * @param string $fqn
-     * @return FactoryDefinitionHelper
-     * @throws ContainerException
+     * @param string|null $commandName
+     * @return FactoryDefinitionHelper[]
+     * @throws ReflectionException|ContainerException
      */
-    public function mapCommand(string $fqn): FactoryDefinitionHelper
+    public function mapCommand(string $fqn, ?string $commandName = null): array
     {
         if (!is_subclass_of($fqn, Command::class)) {
             throw new ContainerException(sprintf(
@@ -30,21 +32,50 @@ class CommandFactoryMapper
                 Command::class
             ));
         }
+
         $reflectionClass = new \ReflectionClass($fqn);
         $nameAttributes = $reflectionClass->getAttributes(Name::class);
-        if (count($nameAttributes) == 0) {
+        $names = [];
+
+        if ($commandName !== null) {
+            $names[] = $commandName;
+        }
+
+        if (count($nameAttributes) > 0) {
+            $names = array_merge(
+                $names,
+                explode('|', $nameAttributes[array_key_first($nameAttributes)]->newInstance()->getName())
+            );
+        }
+
+        $names = array_merge(
+            $names,
+            explode('|', (!empty($name = $fqn::getDefaultName()) ? $name : ''))
+        );
+
+        $names = array_unique(array_filter($names, function ($v) {
+            return !empty(trim($v));
+        }));
+
+        if (empty($names)) {
             throw new ContainerException(sprintf(
-                'Missing a "%1$s" attribute for Command: "%2$s".',
-                Name::class,
+                'Missing a name for Command: "%1$s".',
                 $fqn
             ));
         }
-        /** @var Name $nameAttributeInstance */
-        $nameAttributeInstance = $nameAttributes[array_key_first($nameAttributes)]->newInstance();
-        $name = $nameAttributeInstance->getName();
-        $this->commandMap[$name] = $fqn;
-        return factory([CommandFactory::class, 'create'])
-            ->parameter('name', $name);
+
+        $definitions = [];
+        foreach ($names as $commandAlias) {
+            if (empty(trim($commandAlias))) {
+                continue;
+            }
+            if (empty($definitions)) {
+                $definitions[$fqn] = factory([CommandFactory::class, 'create'])
+                    ->parameter('name', $commandAlias);
+            }
+            $this->commandMap[$commandAlias] = $fqn;
+        }
+        return $definitions;
     }
 
     /**
