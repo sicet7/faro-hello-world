@@ -85,8 +85,6 @@ class Module extends AbstractModule
                 return EntityManager::create($connection, $configuration, $eventManager);
             },
             EntityManagerInterface::class => get(EntityManager::class),
-
-
         ];
     }
 }

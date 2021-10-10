@@ -19,31 +19,31 @@ class ModuleContainer
     private static array $moduleList = [];
 
     /**
-     * @param string $moduleFqn
+     * @param string $moduleFqcn
      * @throws ModuleException
      * @return void
      */
-    public static function registerModule(string $moduleFqn): void
+    public static function registerModule(string $moduleFqcn): void
     {
-        if (!is_subclass_of($moduleFqn, AbstractModule::class)) {
+        if (!is_subclass_of($moduleFqcn, AbstractModule::class)) {
             throw new ModuleException(
-                'Module: "' . $moduleFqn . '" does not inherit from: "' . AbstractModule::class . '"'
+                'Module: "' . $moduleFqcn . '" does not inherit from: "' . AbstractModule::class . '"'
             );
         }
-        if (in_array($moduleFqn, static::getModuleList())) {
-            throw new ModuleException('Module: "' . $moduleFqn . '" is already registered.');
+        if (in_array($moduleFqcn, static::getModuleList())) {
+            throw new ModuleException('Module: "' . $moduleFqcn . '" is already registered.');
         }
-        static::addModuleToList($moduleFqn);
+        static::addModuleToList($moduleFqcn);
     }
 
     /**
-     * @param string $moduleFqn
+     * @param string $moduleFqcn
      * @return bool
      */
-    public static function tryRegisterModule(string $moduleFqn): bool
+    public static function tryRegisterModule(string $moduleFqcn): bool
     {
         try {
-            static::registerModule($moduleFqn);
+            static::registerModule($moduleFqcn);
             return true;
         } catch (ModuleException $exception) {
             return false;
@@ -62,15 +62,15 @@ class ModuleContainer
     }
 
     /**
-     * @param string $moduleFqn
+     * @param string $moduleFqcn
      * @return void
      */
-    protected static function addModuleToList(string $moduleFqn): void
+    protected static function addModuleToList(string $moduleFqcn): void
     {
         if (!isset(self::$moduleList[static::class]) || !is_array(self::$moduleList[static::class])) {
             self::$moduleList[static::class] = [];
         }
-        self::$moduleList[static::class][] = $moduleFqn;
+        self::$moduleList[static::class][] = $moduleFqcn;
     }
 
     /**
@@ -127,18 +127,18 @@ class ModuleContainer
         $containerBuilder->useAutowiring(false);
         $containerBuilder->useAnnotations(false);
         $moduleList = static::getModuleList();
-        foreach ($moduleList as $moduleName => $moduleFqn) {
-            self::loadModule($moduleList, $moduleFqn, $containerBuilder, $loadedModules);
+        foreach ($moduleList as $moduleName => $moduleFqcn) {
+            self::loadModule($moduleList, $moduleFqcn, $containerBuilder, $loadedModules);
         }
-        $moduleListContainer = new ModuleList($loadedModules, static::getModuleList());
+        $moduleListContainer = new ModuleList($loadedModules, $moduleList);
         $containerBuilder->addDefinitions([
             ModuleList::class => $moduleListContainer,
             BuildLock::class => new BuildLock(),
         ]);
 
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqn) {
-            if (is_subclass_of($moduleFqn, BeforeBuildInterface::class)) {
-                $moduleFqn::beforeBuild($moduleListContainer, $containerBuilder);
+        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
+            if (is_subclass_of($moduleFqcn, BeforeBuildInterface::class)) {
+                $moduleFqcn::beforeBuild($moduleListContainer, $containerBuilder);
             }
         }
 
@@ -148,20 +148,20 @@ class ModuleContainer
 
         $container = $containerBuilder->build();
 
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqn) {
-            if (is_subclass_of($moduleFqn, AfterBuildInterface::class)) {
-                $moduleFqn::afterBuild($container);
+        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
+            if (is_subclass_of($moduleFqcn, AfterBuildInterface::class)) {
+                $moduleFqcn::afterBuild($container);
             }
         }
 
         $setupModules = [];
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqn) {
-            self::setupModule($loadedModules, $moduleFqn, $container, $setupModules);
+        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
+            self::setupModule($loadedModules, $moduleFqcn, $container, $setupModules);
         }
 
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqn) {
-            if (is_subclass_of($moduleFqn, AfterSetupInterface::class)) {
-                $moduleFqn::afterSetup($container);
+        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
+            if (is_subclass_of($moduleFqcn, AfterSetupInterface::class)) {
+                $moduleFqcn::afterSetup($container);
             }
         }
 
@@ -171,78 +171,84 @@ class ModuleContainer
 
     /**
      * @param string[] $moduleList
-     * @param string $moduleFqn
+     * @param string $moduleFqcn
      * @param ContainerBuilder $builder
      * @param array $loadedModules
-     * @param string|null $initialFqn
-     * @throws ModuleException
+     * @param string|null $initialFqcn
      * @return void
+     * @throws ModuleException
      */
     private static function loadModule(
         array $moduleList,
-        string $moduleFqn,
+        string $moduleFqcn,
         ContainerBuilder $builder,
         array &$loadedModules,
-        ?string $initialFqn = null
+        ?string $initialFqcn = null
     ): void {
-        /** @var AbstractModule $moduleFqn */
-        if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $loadedModules)) {
+        /** @var AbstractModule $moduleFqcn */
+        if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $loadedModules)) {
             return;
         }
-        if ($initialFqn !== null && $moduleFqn == $initialFqn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
+        if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
+            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqcn::getName() . '".');
         }
-        foreach ($moduleFqn::getDependencies() as $dependency) {
+        if ($initialFqcn === null) {
+            $initialFqcn = $moduleFqcn;
+        }
+        foreach ($moduleFqcn::getDependencies() as $dependency) {
             if (!array_key_exists($dependency, $moduleList)) {
                 throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
+                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqcn::getName() . '".'
                 );
             }
-            $dependencyFqn = $moduleList[$dependency];
-            /** @var AbstractModule $dependencyFqn */
-            self::loadModule($moduleList, $dependencyFqn, $builder, $loadedModules, $moduleFqn);
+            $dependencyFqcn = $moduleList[$dependency];
+            /** @var AbstractModule $dependencyFqcn */
+            self::loadModule($moduleList, $dependencyFqcn, $builder, $loadedModules, $initialFqcn);
         }
-        $definitions = $moduleFqn::getDefinitions();
+        $definitions = $moduleFqcn::getDefinitions();
         if (!empty($definitions)) {
             $builder->addDefinitions($definitions);
         }
-        $loadedModules[$moduleFqn::getName()] = $moduleFqn;
+        $loadedModules[$moduleFqcn::getName()] = $moduleFqcn;
     }
 
     /**
      * @param string[] $moduleList
-     * @param string $moduleFqn
+     * @param string $moduleFqcn
      * @param ContainerInterface $container
      * @param array $setupModules
-     * @param string|null $initialFqn
+     * @param string|null $initialFqcn
      * @return void
      * @throws NotFoundException|DependencyException|ModuleException
      */
     private static function setupModule(
         array $moduleList,
-        string $moduleFqn,
+        string $moduleFqcn,
         ContainerInterface $container,
         array &$setupModules,
-        ?string $initialFqn = null
+        ?string $initialFqcn = null
     ): void {
-        /** @var AbstractModule $moduleFqn */
-        if (!$moduleFqn::isEnabled() || in_array($moduleFqn, $setupModules)) {
+        /** @var AbstractModule $moduleFqcn */
+        if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $setupModules)) {
             return;
         }
-        if ($initialFqn !== null && $moduleFqn == $initialFqn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqn::getName() . '".');
+        if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
+            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqcn::getName() . '".');
         }
-        foreach ($moduleFqn::getDependencies() as $dependency) {
+        if ($initialFqcn === null) {
+            $initialFqcn = $moduleFqcn;
+        }
+        foreach ($moduleFqcn::getDependencies() as $dependency) {
             if (!array_key_exists($dependency, $moduleList)) {
                 throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqn::getName() . '".'
+                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqcn::getName() . '".'
                 );
             }
-            $dependencyFqn = $moduleList[$dependency];
-            /** @var AbstractModule $dependencyFqn */
-            self::setupModule($moduleList, $dependencyFqn, $container, $setupModules, $moduleFqn);
+            $dependencyFqcn = $moduleList[$dependency];
+            /** @var AbstractModule $dependencyFqcn */
+            self::setupModule($moduleList, $dependencyFqcn, $container, $setupModules, $initialFqcn);
         }
-        $moduleFqn::setup($container);
-        $setupModules[$moduleFqn::getName()] = $moduleFqn;
+        $moduleFqcn::setup($container);
+        $setupModules[$moduleFqcn::getName()] = $moduleFqcn;
     }
 }

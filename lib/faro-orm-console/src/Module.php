@@ -1,6 +1,6 @@
 <?php
 
-namespace Sicet7\Faro\ORM;
+namespace Sicet7\Faro\ORM\Console;
 
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Tools\Console\Command\ReservedWordsCommand;
@@ -38,14 +38,24 @@ use Doctrine\ORM\Tools\Console\Command\SchemaTool\UpdateCommand;
 use Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\Interfaces\AfterBuildInterface;
+use Sicet7\Faro\Core\Interfaces\AfterSetupInterface;
+use Doctrine\Migrations\AbstractMigration;
 
+use Sicet7\Faro\Core\ModuleList;
+use Sicet7\Faro\ORM\Console\Interfaces\HasMigrationsInterface;
 use function DI\create;
 use function DI\get;
 
-class ConsoleModule extends AbstractModule implements HasCommandsInterface
+class Module extends AbstractModule implements
+    HasCommandsInterface,
+    AfterSetupInterface,
+    AfterBuildInterface
 {
     /**
      * @return string
@@ -145,5 +155,41 @@ class ConsoleModule extends AbstractModule implements HasCommandsInterface
             5 => RollupCommand::class,
             6 => StatusCommand::class,
         ];
+    }
+
+    /**
+     * @param ContainerInterface $container
+     * @return void
+     * @throws ModuleException
+     */
+    public static function afterBuild(ContainerInterface $container): void
+    {
+        $moduleList = $container->get(ModuleList::class);
+        $moduleList->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($container) {
+            if (!is_subclass_of($moduleFqcn, HasMigrationsInterface::class)) {
+                return;
+            }
+            $configuration = $container->get(MigrationConfiguration::class);
+            $migrations = $moduleFqcn::getMigrations();
+            ksort($migrations);
+            foreach ($migrations as $migration) {
+                if (!is_subclass_of($migration, AbstractMigration::class)) {
+                    throw new ModuleException(
+                        'Migrations must extends "' . AbstractMigration::class . '", ' .
+                        '"' . $migration . '" does not.'
+                    );
+                }
+                $configuration->addMigrationClass($migration);
+            }
+        });
+    }
+
+    /**
+     * @param ContainerInterface $container
+     * @return void
+     */
+    public static function afterSetup(ContainerInterface $container): void
+    {
+        $container->get(MigrationConfiguration::class)->freeze();
     }
 }

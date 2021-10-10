@@ -1,18 +1,17 @@
 {
-    "name": "sicet7/faro-orm",
+    "name": "sicet7/faro-orm-console",
     "version": "0.0.1",
     "type": "library",
-    "description": "The library containing the ORM for the Faro Framework.",
+    "description": "The library containing console for the ORM of the Faro Framework.",
     "require": {
         "php": ">=8.0",
-        "sicet7/faro-core": "*",
-        "sicet7/faro-event": "*",
-        "sicet7/faro-log": "*",
-        "doctrine/orm": "^2.10"
+        "sicet7/faro-orm": "*",
+        "sicet7/faro-console": "*",
+        "doctrine/migrations": "^3.2"
     },
     "autoload": {
         "psr-4": {
-            "Sicet7\\Faro\\ORM\\": "src/"
+            "Sicet7\\Faro\\ORM\\Console\\": "src/"
         },
         "files": [
             "module.php"

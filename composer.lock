@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6cbd318f4834e1cc9ab52ec0aa8ade43",
+    "content-hash": "285d90c98d0c644a37f72966b9ee6bb7",
     "packages": [
         {
             "name": "composer/package-versions-deprecated",
@@ -2674,6 +2674,44 @@
                 }
             ],
             "description": "The library containing the ORM for the Faro Framework.",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        },
+        {
+            "name": "sicet7/faro-orm-console",
+            "version": "0.0.1",
+            "dist": {
+                "type": "path",
+                "url": "./lib/faro-orm-console",
+                "reference": "6aef37d0a1b133987f4b6fe747dc041da2693feb"
+            },
+            "require": {
+                "php": ">=8.0",
+                "sicet7/faro-console": "*",
+                "sicet7/faro-orm": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Sicet7\\Faro\\ORM\\Console\\": "src/"
+                },
+                "files": [
+                    "module.php"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Martin René Sørensen",
+                    "email": "composer@sicet7.com",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "The library containing console for the ORM of the Faro Framework.",
             "transport-options": {
                 "symlink": false,
                 "relative": true
