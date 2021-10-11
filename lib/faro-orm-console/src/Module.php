@@ -12,6 +12,8 @@ use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\Migrations\Configuration\Migration\ConfigurationLoader;
 use Doctrine\Migrations\Configuration\Migration\ExistingConfiguration;
 use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Metadata\Storage\MetadataStorageConfiguration;
+use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
 use Doctrine\Migrations\Tools\Console\Command\DumpSchemaCommand;
 use Doctrine\Migrations\Tools\Console\Command\ExecuteCommand;
 use Doctrine\Migrations\Tools\Console\Command\GenerateCommand;
@@ -40,6 +42,7 @@ use Doctrine\ORM\Tools\Console\EntityManagerProvider;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Exception\ModuleException;
@@ -82,11 +85,22 @@ class Module extends AbstractModule implements
     public static function getDefinitions(): array
     {
         return [
-            MigrationConfiguration::class => function () {
+            TableMetadataStorageConfiguration::class => function (Config $config) {
+                $instance = new TableMetadataStorageConfiguration();
+                $instance->setTableName(
+                    ($config->has('db.migrations.table') ? $config->get('db.migrations.table') : 'migrations')
+                );
+                return $instance;
+            },
+            MetadataStorageConfiguration::class => get(TableMetadataStorageConfiguration::class),
+            MigrationConfiguration::class => function (
+                MetadataStorageConfiguration $metadataStorageConfiguration
+            ) {
                 $migrationConfiguration = new MigrationConfiguration();
                 $migrationConfiguration->setMigrationOrganization(
                     MigrationConfiguration::VERSIONS_ORGANIZATION_NONE
                 );
+                $migrationConfiguration->setMetadataStorageConfiguration($metadataStorageConfiguration);
                 return $migrationConfiguration;
             },
             ExistingConfiguration::class => create(ExistingConfiguration::class)->constructor(

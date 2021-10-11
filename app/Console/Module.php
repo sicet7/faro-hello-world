@@ -4,10 +4,12 @@ namespace App\Console;
 
 use App\Console\Commands\HelloWorldCommand;
 use App\Console\Commands\PingCommand;
+use App\Console\Database\Migrations\CreateTestTable;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\ORM\Console\Interfaces\HasMigrationsInterface;
 
-class Module extends AbstractModule implements HasCommandsInterface
+class Module extends AbstractModule implements HasCommandsInterface, HasMigrationsInterface
 {
     /**
      * @return string
@@ -35,6 +37,16 @@ class Module extends AbstractModule implements HasCommandsInterface
         return [
             HelloWorldCommand::class,
             PingCommand::class,
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getMigrations(): array
+    {
+        return [
+            CreateTestTable::class,
         ];
     }
 }
