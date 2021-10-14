@@ -3,6 +3,9 @@
 namespace Sicet7\Faro\Swoole\Http\Server;
 
 use Psr\Log\LoggerInterface;
+use Sicet7\Faro\Config\Config;
+use Sicet7\Faro\Config\Exceptions\ConfigException;
+use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 
 class ErrorHandler extends \Monolog\ErrorHandler
 {
@@ -11,6 +14,11 @@ class ErrorHandler extends \Monolog\ErrorHandler
     public const ERROR_DESC = 'The server encountered an unexpected condition that prevented' .
     ' it from fulfilling the request.';
 
+    private const LEVEL_MAP_KEY = 'error.handler.levelMap';
+
+    private const FETAL_RES_MEM_SIZE_KEY = 'error.handler.fetal.reservedMemorySize';
+    private const FETAL_LOG_LEVEL_KEY = 'error.handler.fetal.logLevel';
+
     /**
      * @var WorkerState|null
      */
@@ -18,20 +26,31 @@ class ErrorHandler extends \Monolog\ErrorHandler
 
     /**
      * @param LoggerInterface $logger
-     * @param array $errorLevelMap
-     * @param array $exceptionLevelMap
-     * @param null $fatalLevel
-     * @param WorkerState|null $workerState
+     * @param WorkerState $state
+     * @param Config $config
      * @return static
+     * @throws ConfigException
+     * @throws ConfigNotFoundException
      */
-    public static function register(
+    public static function create(
         LoggerInterface $logger,
-        $errorLevelMap = [],
-        $exceptionLevelMap = [],
-        $fatalLevel = null,
-        ?WorkerState $workerState = null
-    ): ErrorHandler {
-        return parent::register($logger, $errorLevelMap, $exceptionLevelMap, $fatalLevel)->setWorkerState($workerState);
+        WorkerState $state,
+        Config $config
+    ): static {
+        $handler = new static($logger);
+        $handler->setWorkerState($state);
+        $levelMap = ($config->has(self::LEVEL_MAP_KEY) ? $config->get(self::LEVEL_MAP_KEY) : []);
+        $fetalResMemSize = ($config->has(self::FETAL_RES_MEM_SIZE_KEY) ?
+            $config->get(self::FETAL_RES_MEM_SIZE_KEY) : 20);
+        $fetalLogLevel = ($config->has(self::FETAL_LOG_LEVEL_KEY) ? $config->get(self::FETAL_LOG_LEVEL_KEY) : null);
+        $handler->registerErrorHandler(
+            $levelMap,
+            !str_contains($config->get('app.env'), 'prod'),
+            -1,
+            false
+        );
+        $handler->registerFatalHandler($fetalLogLevel, $fetalResMemSize);
+        return $handler;
     }
 
     /**
@@ -41,26 +60,6 @@ class ErrorHandler extends \Monolog\ErrorHandler
     {
         parent::handleFatalError();
         $this->sendErrorResponse();
-    }
-
-    /**
-     * @param int $code
-     * @param string $message
-     * @param string $file
-     * @param int $line
-     * @param array $context
-     * @return bool
-     */
-    public function handleError(
-        int $code,
-        string $message,
-        string $file = '',
-        int $line = 0,
-        array $context = []
-    ): bool {
-        $result = parent::handleError($code, $message, $file, $line, $context);
-        $this->sendErrorResponse();
-        return $result;
     }
 
     /**

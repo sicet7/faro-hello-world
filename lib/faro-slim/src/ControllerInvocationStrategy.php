@@ -39,9 +39,9 @@ class ControllerInvocationStrategy implements InvocationStrategyInterface
         $args = [
             'request'  => $request,
             'response' => $response,
+            'routeArguments' => $routeArguments,
         ];
         $args += $routeArguments;
-        $args += $request->getAttributes();
         return $this->invoker->call(
             $callable,
             $args

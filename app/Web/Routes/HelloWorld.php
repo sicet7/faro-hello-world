@@ -14,6 +14,7 @@ class HelloWorld
      */
     public function __invoke(ResponseInterface $response): ResponseInterface
     {
+        trigger_deprecation('test', '1.0.0', 'dont do this');
         $response->getBody()->write('Hello World');
         return $response;
     }

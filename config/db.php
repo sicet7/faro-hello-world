@@ -12,8 +12,10 @@ return [
         'host' => 'localhost',
         'driver' => 'pdo_pgsql',
     ],
-    'proxyClasses' => [
-        'dir' => concat(val('dir.root'), '/proxies'),
-        'namespace' => 'Proxies\\',
+    'orm' => [
+        'proxyClasses' => [
+            'dir' => concat(val('dir.root'), '/proxies'),
+            'namespace' => 'Proxies\\',
+        ],
     ],
 ];

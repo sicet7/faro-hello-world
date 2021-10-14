@@ -40,6 +40,7 @@ use Sicet7\Faro\ORM\Events\ORM\PrePersistEvent;
 use Sicet7\Faro\ORM\Events\ORM\PreRemoveEvent;
 use Sicet7\Faro\ORM\Events\ORM\PreUpdateEvent;
 
+//TODO: find a way to implement the "getListeners" method for better compatibility
 class DoctrineEventConverter extends EventManager
 {
     /**

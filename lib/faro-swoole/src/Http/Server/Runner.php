@@ -11,6 +11,9 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Sicet7\Faro\Config\Config;
+use Sicet7\Faro\Config\Exceptions\ConfigException;
+use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
@@ -92,8 +95,8 @@ class Runner
         $this->container = ModuleContainer::buildContainer([
             WorkerState::class => new WorkerState($workerId, $server),
             Psr17Factory::class => create(Psr17Factory::class),
-            ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state) {
-                return ErrorHandler::register($logger, [], false, null, $state);
+            ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state, Config $config) {
+                return ErrorHandler::create($logger, $state, $config);
             },
         ]);
         $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
@@ -108,6 +111,9 @@ class Runner
     public function onRequest(Request $request, Response $response): void
     {
         try {
+            if ($this->handleMaintenance($request, $response)) {
+                return;
+            }
             $this->updateWorkerState($request, $response);
             $psr17Factory = $this->container->get(Psr17Factory::class);
             $requestConverter = new SwooleServerRequestConverter(
@@ -208,5 +214,32 @@ class Runner
             return null;
         }
         return $this->container->get(LoggerInterface::class);
+    }
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return bool Returns true if maintenance is enabled and has been handled, false otherwise.
+     * @throws ConfigException
+     * @throws ConfigNotFoundException
+     */
+    protected function handleMaintenance(Request $request, Response $response): bool
+    {
+        // TODO: move this handler to its own class to expand functionality with cookies and more.
+        /** @var Config $config */
+        $config = $this->container->get(Config::class);
+        $appRoot = $config->get('dir.root');
+        if (file_exists($appRoot . '/maintenance.flag')) {
+            if ($config->has('maintenance.whitelist.ips')) {
+                $whitelistedIps = $config->get('maintenance.whitelist.ips');
+                if (in_array($request->server['remote_addr'], $whitelistedIps)) {
+                    return false;
+                }
+            }
+            $response->setStatusCode(503, self::ERRORS[503]);
+            $response->end(file_get_contents($appRoot . '/maintenance.flag'));
+            return true;
+        }
+        return false;
     }
 }

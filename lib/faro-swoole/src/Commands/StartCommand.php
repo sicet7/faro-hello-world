@@ -50,7 +50,7 @@ class StartCommand extends Command
     {
         $this->addArgument(
             'ip_and_port',
-            InputArgument::REQUIRED,
+            InputArgument::OPTIONAL,
             'The ip and the port that the server should listen on'
         );
     }
@@ -65,13 +65,25 @@ class StartCommand extends Command
         InputInterface $input,
         OutputInterface $output
     ): int {
-        $ipAndPort = $input->getArgument('ip_and_port');
-        if (!$this->validateIpAndPort($ipAndPort)) {
-            throw new RuntimeException('Invalid IP for Port.');
+        $ip = null;
+        $port = null;
+        if ($this->config->has('server.ip') && $this->config->has('server.port')) {
+            $ip = $this->config->get('server.ip');
+            $port = $this->config->get('server.port');
         }
-        $ip = $this->getIp($ipAndPort);
-        $port = $this->getPort($ipAndPort);
-        $this->serverHandler->init($ip, $port, false);
+        if ($ip === null || $port === null) {
+            $ipAndPort = $input->getArgument('ip_and_port');
+            if (!$this->validateIpAndPort($ipAndPort)) {
+                throw new RuntimeException('Invalid IP for Port.');
+            }
+            $ip = $this->getIp($ipAndPort);
+            $port = $this->getPort($ipAndPort);
+        }
+        $this->serverHandler->init(
+            $ip,
+            $port,
+            ($this->config->has('server.ssl.enabled') ? $this->config->get('server.ssl.enabled') : false)
+        );
         $this->serverHandler->configure($this->config);
         $this->serverHandler->start();
         return 0;

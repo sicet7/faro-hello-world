@@ -10,6 +10,7 @@ use Doctrine\ORM\Configuration as ORMConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Mapping\Driver\MappingDriver;
+use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\AbstractModule;
@@ -18,6 +19,7 @@ use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
 use function DI\create;
 use function DI\get;
 
+// TODO: Make so that entities have a registration interface that is resolved in this module.
 class Module extends AbstractModule
 {
     /**
@@ -52,12 +54,29 @@ class Module extends AbstractModule
             DBALConfiguration::class => get(ORMConfiguration::class),
             ORMConfiguration::class => function (
                 Config $config,
-                MappingDriver $mappingDriver
+                MappingDriver $mappingDriver,
+                ContainerInterface $container
             ) {
                 $dbConfig = new ORMConfiguration();
                 $dbConfig->setMetadataDriverImpl($mappingDriver);
-                $dbConfig->setProxyDir($config->get('db.proxyClasses.dir'));
-                $dbConfig->setProxyNamespace($config->get('db.proxyClasses.namespace'));
+                $dbConfig->setProxyDir($config->get('db.orm.proxyClasses.dir'));
+                $dbConfig->setProxyNamespace($config->get('db.orm.proxyClasses.namespace'));
+                // TODO: Set RepositoryFactory to a implementation which gets from the Container.
+                //$dbConfig->setRepositoryFactory();
+                if ($config->has('db.orm.cache.metadata')) {
+                    $dbConfig->setMetadataCache(
+                        $container->get(
+                            $config->get('db.orm.cache.metadata')
+                        )
+                    );
+                }
+                if ($config->has('db.orm.cache.query')) {
+                    $dbConfig->setQueryCache(
+                        $container->get(
+                            $config->get('db.orm.cache.query')
+                        )
+                    );
+                }
                 return $dbConfig;
             },
             DoctrineEventConverter::class => create(DoctrineEventConverter::class)->constructor(

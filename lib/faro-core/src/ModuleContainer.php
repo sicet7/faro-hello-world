@@ -115,9 +115,6 @@ class ModuleContainer
      */
     public static function buildContainer(array $customDefinitions = []): ContainerInterface
     {
-        if (class_exists('App\\Module')) {
-            static::tryRegisterModule('App\\Module');
-        }
         foreach (self::$moduleList[self::class] as $module) {
             static::tryRegisterModule($module);
         }
