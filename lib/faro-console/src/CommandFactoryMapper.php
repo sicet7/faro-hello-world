@@ -18,22 +18,22 @@ class CommandFactoryMapper
     private array $commandMap = [];
 
     /**
-     * @param string $fqn
+     * @param string $fqcn
      * @param string|null $commandName
      * @return FactoryDefinitionHelper[]
      * @throws ReflectionException|ContainerException
      */
-    public function mapCommand(string $fqn, ?string $commandName = null): array
+    public function mapCommand(string $fqcn, ?string $commandName = null): array
     {
-        if (!is_subclass_of($fqn, Command::class)) {
+        if (!is_subclass_of($fqcn, Command::class)) {
             throw new ContainerException(sprintf(
                 'Cannot map command to non-command class. "%1$s" must extend "%2$s"',
-                $fqn,
+                $fqcn,
                 Command::class
             ));
         }
 
-        $reflectionClass = new \ReflectionClass($fqn);
+        $reflectionClass = new \ReflectionClass($fqcn);
         $nameAttributes = $reflectionClass->getAttributes(Name::class);
         $names = [];
 
@@ -50,7 +50,7 @@ class CommandFactoryMapper
 
         $names = array_merge(
             $names,
-            explode('|', (!empty($name = $fqn::getDefaultName()) ? $name : ''))
+            explode('|', (!empty($name = $fqcn::getDefaultName()) ? $name : ''))
         );
 
         $names = array_unique(array_filter($names, function ($v) {
@@ -60,7 +60,7 @@ class CommandFactoryMapper
         if (empty($names)) {
             throw new ContainerException(sprintf(
                 'Missing a name for Command: "%1$s".',
-                $fqn
+                $fqcn
             ));
         }
 
@@ -70,10 +70,10 @@ class CommandFactoryMapper
                 continue;
             }
             if (empty($definitions)) {
-                $definitions[$fqn] = factory([CommandFactory::class, 'create'])
+                $definitions[$fqcn] = factory([CommandFactory::class, 'create'])
                     ->parameter('name', $commandAlias);
             }
-            $this->commandMap[$commandAlias] = $fqn;
+            $this->commandMap[$commandAlias] = $fqcn;
         }
         return $definitions;
     }

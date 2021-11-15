@@ -52,18 +52,18 @@ abstract class GenericFactory
     }
 
     /**
-     * @param string $fqn
+     * @param string $fqcn
      * @return bool
      */
-    protected function inWhitelist(string $fqn): bool
+    protected function inWhitelist(string $fqcn): bool
     {
         $whitelist = $this->getClassWhitelist();
         if (empty($whitelist)) {
             return true;
         }
         $return = false;
-        foreach ($whitelist as $whitelistedFqn) {
-            if ($fqn == $whitelistedFqn || is_subclass_of($fqn, $whitelistedFqn)) {
+        foreach ($whitelist as $whitelistedFqcn) {
+            if ($fqcn == $whitelistedFqcn || is_subclass_of($fqcn, $whitelistedFqcn)) {
                 $return = true;
                 break;
             }

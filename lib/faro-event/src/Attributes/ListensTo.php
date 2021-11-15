@@ -11,23 +11,23 @@ class ListensTo
     /**
      * @var string
      */
-    private string $eventFqn;
+    private string $eventFqcn;
 
     /**
      * ListensTo constructor.
-     * @param string $eventFqn
+     * @param string $eventFqcn
      */
     public function __construct(
-        string $eventFqn
+        string $eventFqcn
     ) {
-        $this->eventFqn = $eventFqn;
+        $this->eventFqcn = $eventFqcn;
     }
 
     /**
      * @return string
      */
-    public function getEventFqn(): string
+    public function getEventFqcn(): string
     {
-        return $this->eventFqn;
+        return $this->eventFqcn;
     }
 }

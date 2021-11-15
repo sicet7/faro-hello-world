@@ -22,7 +22,7 @@ return [
     'pid_file' => concat(val('dir.root'), '/swoole.pid'),
 
     // server
-    'worker_num' => 2,
+    'worker_num' => swoole_cpu_num(),
     'dispatch_mode' => 2,
 
     // worker

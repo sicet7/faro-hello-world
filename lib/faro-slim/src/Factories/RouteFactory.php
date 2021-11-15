@@ -18,15 +18,15 @@ class RouteFactory extends GenericFactory
     private bool $locked = false;
 
     /**
-     * @param string $fqn
+     * @param string $fqcn
      * @return bool
      */
-    protected function inWhitelist(string $fqn): bool
+    protected function inWhitelist(string $fqcn): bool
     {
         if (empty($this->getClassWhitelist())) {
             return false;
         }
-        return parent::inWhitelist($fqn);
+        return parent::inWhitelist($fqcn);
     }
 
     /**

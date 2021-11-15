@@ -52,6 +52,12 @@ class Initializer
         if ($this->server === null) {
             throw new SwooleException('Server not yet initialized!');
         }
+        if (isset($configArray['log_file']) && !file_exists($configArray['log_file'])) {
+            mkdir(dirname($configArray['log_file']), 0755, true);
+        }
+        if (isset($configArray['document_root']) && !file_exists($configArray['document_root'])) {
+            mkdir($configArray['document_root'], 0755, true);
+        }
         $this->server->set($configArray);
     }
 

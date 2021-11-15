@@ -7,7 +7,7 @@
         "php": ">=8.0",
         "sicet7/faro-orm": "*",
         "sicet7/faro-console": "*",
-        "doctrine/migrations": "^3.2"
+        "doctrine/migrations": "^3.3"
     },
     "autoload": {
         "psr-4": {

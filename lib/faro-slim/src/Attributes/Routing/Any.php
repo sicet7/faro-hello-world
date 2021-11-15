@@ -11,13 +11,13 @@ class Any extends Route
      * Any constructor.
      * @param string $pattern
      * @param array $middlewares
-     * @param string|null $groupFqn
+     * @param string|null $groupFqcn
      */
     public function __construct(
         string $pattern,
         array $middlewares = [],
-        ?string $groupFqn = null
+        ?string $groupFqcn = null
     ) {
-        parent::__construct(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $pattern, $middlewares, $groupFqn);
+        parent::__construct(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $pattern, $middlewares, $groupFqcn);
     }
 }

@@ -11,7 +11,6 @@ use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Core\AbstractModule;
 
-//TODO: go through the entire lib directory can change every FQN to FQCN which is the more correct term.
 class Module extends AbstractModule implements HasConfigInterface
 {
     /**

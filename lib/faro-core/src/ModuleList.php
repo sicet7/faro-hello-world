@@ -44,12 +44,12 @@ class ModuleList
     }
 
     /**
-     * @param string $fqn
+     * @param string $fqcn
      * @return bool
      */
-    public function isModuleClassLoaded(string $fqn): bool
+    public function isModuleClassLoaded(string $fqcn): bool
     {
-        return in_array($fqn, $this->getLoadedModules());
+        return in_array($fqcn, $this->getLoadedModules());
     }
 
     /**
@@ -62,12 +62,12 @@ class ModuleList
     }
 
     /**
-     * @param string $fqn
+     * @param string $fqcn
      * @return bool
      */
-    public function isModuleClassRegistered(string $fqn): bool
+    public function isModuleClassRegistered(string $fqcn): bool
     {
-        return in_array($fqn, $this->getRegisteredModules());
+        return in_array($fqcn, $this->getRegisteredModules());
     }
 
     /**

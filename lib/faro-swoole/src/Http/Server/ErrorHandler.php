@@ -94,6 +94,11 @@ class ErrorHandler extends \Monolog\ErrorHandler
      */
     public function bootMessage(): void
     {
-        echo '"' . static::class . '" Booted!' . PHP_EOL;
+        $workerId = $this->getWorkerState()?->getId();
+        if (is_int($workerId)) {
+            echo '"' . static::class . '" Booted on Worker #' . $workerId . PHP_EOL;
+        } else {
+            echo '"' . static::class . '" Booted on Unknown Worker' . PHP_EOL;
+        }
     }
 }

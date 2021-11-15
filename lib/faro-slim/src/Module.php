@@ -119,8 +119,8 @@ class Module extends AbstractModule implements HasListenersInterface, BeforeBuil
         $routeLoader = $container->get(RouteLoaderInterface::class);
         foreach ($moduleList->getLoadedModules() as $loadedModule) {
             if (is_subclass_of($loadedModule, HasRoutesInterface::class)) {
-                foreach ($loadedModule::getRoutes() as $routeFqn) {
-                    $routeLoader->registerRoute($routeFqn);
+                foreach ($loadedModule::getRoutes() as $routeFqcn) {
+                    $routeLoader->registerRoute($routeFqcn);
                 }
             }
         }
@@ -136,9 +136,9 @@ class Module extends AbstractModule implements HasListenersInterface, BeforeBuil
     {
         foreach ($moduleList->getLoadedModules() as $loadedModule) {
             if (is_subclass_of($loadedModule, HasRoutesInterface::class)) {
-                foreach ($loadedModule::getRoutes() as $routeFqn) {
+                foreach ($loadedModule::getRoutes() as $routeFqcn) {
                     $containerBuilder->addDefinitions([
-                        $routeFqn => factory([RouteFactory::class, 'create']),
+                        $routeFqcn => factory([RouteFactory::class, 'create']),
                     ]);
                 }
             }

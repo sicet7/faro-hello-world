@@ -25,25 +25,25 @@ class Route
     /**
      * @var string|null
      */
-    private ?string $groupFqn;
+    private ?string $groupFqcn;
 
     /**
      * Route constructor.
      * @param array $methods
      * @param string $pattern
      * @param array $middlewares
-     * @param string|null $groupFqn
+     * @param string|null $groupFqcn
      */
     public function __construct(
         array $methods,
         string $pattern,
         array $middlewares = [],
-        ?string $groupFqn = null
+        ?string $groupFqcn = null
     ) {
         $this->methods = $methods;
         $this->pattern = $pattern;
         $this->middlewares = $middlewares;
-        $this->groupFqn = $groupFqn;
+        $this->groupFqcn = $groupFqcn;
     }
 
     /**
@@ -73,8 +73,8 @@ class Route
     /**
      * @return string|null
      */
-    public function getGroupFqn(): ?string
+    public function getGroupFqcn(): ?string
     {
-        return $this->groupFqn;
+        return $this->groupFqcn;
     }
 }

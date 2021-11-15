@@ -81,12 +81,12 @@ class Module extends AbstractModule implements BeforeBuildInterface
     {
         $commandFactoryMapper = new CommandFactoryMapper();
 
-        foreach ($moduleList->getLoadedModules() as $moduleFqn) {
-            if (is_subclass_of($moduleFqn, HasCommandsInterface::class)) {
-                foreach ($moduleFqn::getCommands() as $name => $commandFqn) {
+        foreach ($moduleList->getLoadedModules() as $moduleFqcn) {
+            if (is_subclass_of($moduleFqcn, HasCommandsInterface::class)) {
+                foreach ($moduleFqcn::getCommands() as $name => $commandFqcn) {
                     $containerBuilder->addDefinitions(
                         $commandFactoryMapper->mapCommand(
-                            $commandFqn,
+                            $commandFqcn,
                             (is_string($name) && !is_numeric($name) ? $name : null)
                         )
                     );

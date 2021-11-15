@@ -11,13 +11,13 @@ class Post extends Route
      * Post constructor.
      * @param string $pattern
      * @param string[] $middlewares
-     * @param string|null $groupFqn
+     * @param string|null $groupFqcn
      */
     public function __construct(
         string $pattern,
         array $middlewares = [],
-        ?string $groupFqn = null
+        ?string $groupFqcn = null
     ) {
-        parent::__construct(['POST'], $pattern, $middlewares, $groupFqn);
+        parent::__construct(['POST'], $pattern, $middlewares, $groupFqcn);
     }
 }

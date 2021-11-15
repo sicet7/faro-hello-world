@@ -51,12 +51,12 @@ class ListenerProvider implements ListenerProviderInterface
      */
     public function getListenersForEvent(object $event): iterable
     {
-        $fqn = get_class($event);
+        $fqcn = get_class($event);
         if (!$this->hasListenersForEvent($event)) {
             return [];
         }
         $listeners = [];
-        foreach ($this->listeners[$fqn] as $id => $listener) {
+        foreach ($this->listeners[$fqcn] as $id => $listener) {
             $listeners[] = [
                 (is_string($listener) ? $this->container->get($listener) : $listener),
                 'execute',
@@ -71,8 +71,8 @@ class ListenerProvider implements ListenerProviderInterface
      */
     public function hasListenersForEvent(object $event): bool
     {
-        $eventFqn = get_class($event);
-        return (isset($this->listeners[$eventFqn]) && !empty($this->listeners[$eventFqn]));
+        $eventFqcn = get_class($event);
+        return (isset($this->listeners[$eventFqcn]) && !empty($this->listeners[$eventFqcn]));
     }
 
     /**
@@ -100,23 +100,23 @@ class ListenerProvider implements ListenerProviderInterface
         foreach ($reflectionClass->getAttributes(ListensTo::class) as $attribute) {
             if (
                 ($attributeInstance = $attribute->newInstance()) instanceof ListensTo &&
-                ($eventFqn = $attributeInstance->getEventFqn()) !== null &&
-                class_exists($eventFqn)
+                ($eventFqcn = $attributeInstance->getEventFqcn()) !== null &&
+                class_exists($eventFqcn)
             ) {
                 /** @var ListensTo $attributeInstance */
                 if (
-                    !array_key_exists($eventFqn, $this->listeners) ||
-                    !is_array($this->listeners[$eventFqn])
+                    !array_key_exists($eventFqcn, $this->listeners) ||
+                    !is_array($this->listeners[$eventFqcn])
                 ) {
-                    $this->listeners[$eventFqn] = [];
+                    $this->listeners[$eventFqcn] = [];
                 }
-                $this->listeners[$eventFqn][$id] = $listener;
+                $this->listeners[$eventFqcn][$id] = $listener;
             }
         }
         if (!is_string($listener) && $listener instanceof ListensToInterface) {
-            foreach ($listener->getEvents() as $eventFqn) {
-                if (class_exists($eventFqn)) {
-                    $this->listeners[$eventFqn][$id] = $listener;
+            foreach ($listener->getEvents() as $eventFqcn) {
+                if (class_exists($eventFqcn)) {
+                    $this->listeners[$eventFqcn][$id] = $listener;
                 }
             }
         }
