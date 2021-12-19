@@ -2,6 +2,8 @@
 
 namespace Sicet7\Faro\Core;
 
+use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 
 class BuildLock
@@ -10,6 +12,19 @@ class BuildLock
      * @var bool
      */
     private bool $locked = false;
+
+    /**
+     * @var ContainerInterface
+     */
+    private ContainerInterface $container;
+
+    /**
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
 
     /**
      * @return bool
@@ -21,10 +36,17 @@ class BuildLock
 
     /**
      * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function lock(): void
     {
-        $this->locked = true;
+        if (!$this->locked) {
+            $this->locked = true;
+            if ($this->container->has(EventDispatcherInterface::class)) {
+                $this->container->get(EventDispatcherInterface::class)->dispatch($this);
+            }
+        }
     }
 
     /**

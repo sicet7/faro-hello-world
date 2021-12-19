@@ -11,6 +11,7 @@ use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\BuildLock;
+use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
 use Sicet7\Faro\Event\Factories\ListenerFactory;
@@ -79,20 +80,18 @@ class Module extends AbstractModule implements BeforeBuildInterface
     }
 
     /**
-     * @param ModuleList $moduleList
-     * @param ContainerBuilder $containerBuilder
+     * @param ContainerBuilderProxy $builderProxy
      * @return void
+     * @throws \Sicet7\Faro\Core\Exception\ModuleException
      */
-    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
+    public static function beforeBuild(ContainerBuilderProxy $builderProxy): void
     {
-        foreach ($moduleList->getLoadedModules() as $loadedModule) {
-            if (is_subclass_of($loadedModule, HasListenersInterface::class)) {
-                foreach ($loadedModule::getListeners() as $listener) {
-                    $containerBuilder->addDefinitions([
-                        $listener => factory([ListenerFactory::class, 'create']),
-                    ]);
+        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($builderProxy) {
+            if (is_subclass_of($moduleFqcn, HasListenersInterface::class)) {
+                foreach ($moduleFqcn::getListeners() as $listener) {
+                    $builderProxy->addDefinition($listener, factory([ListenerFactory::class, 'create']));
                 }
             }
-        }
+        });
     }
 }

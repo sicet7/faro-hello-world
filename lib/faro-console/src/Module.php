@@ -12,6 +12,7 @@ use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Sicet7\Faro\Console\Event\SymfonyDispatcher;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
@@ -72,31 +73,29 @@ class Module extends AbstractModule implements BeforeBuildInterface
     }
 
     /**
-     * @param ModuleList $moduleList
-     * @param ContainerBuilder $containerBuilder
+     * @param ContainerBuilderProxy $builderProxy
      * @return void
      * @throws ContainerException
+     * @throws \ReflectionException
      */
-    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
+    public static function beforeBuild(ContainerBuilderProxy $builderProxy): void
     {
         $commandFactoryMapper = new CommandFactoryMapper();
 
-        foreach ($moduleList->getLoadedModules() as $moduleFqcn) {
+        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($commandFactoryMapper, $builderProxy) {
             if (is_subclass_of($moduleFqcn, HasCommandsInterface::class)) {
                 foreach ($moduleFqcn::getCommands() as $name => $commandFqcn) {
-                    $containerBuilder->addDefinitions(
-                        $commandFactoryMapper->mapCommand(
-                            $commandFqcn,
-                            (is_string($name) && !is_numeric($name) ? $name : null)
-                        )
-                    );
+                    foreach($commandFactoryMapper->mapCommand(
+                        $commandFqcn,
+                        (is_string($name) && !is_numeric($name) ? $name : null)
+                    ) as $fqcn => $def) {
+                        $builderProxy->addDefinition($fqcn, $def);
+                    }
                 }
             }
-        }
+        });
 
-        $containerBuilder->addDefinitions([
-            CommandLoaderInterface::class => create(ContainerCommandLoader::class)
-                ->constructor(get(ContainerInterface::class), $commandFactoryMapper->getMap()),
-        ]);
+        $builderProxy->addDefinition(CommandLoaderInterface::class, create(ContainerCommandLoader::class)
+            ->constructor(get(ContainerInterface::class), $commandFactoryMapper->getMap()));
     }
 }

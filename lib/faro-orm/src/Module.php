@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\ORM;
 
+use DI\FactoryInterface;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -9,19 +10,28 @@ use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\ORM\Configuration as ORMConfiguration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Repository\RepositoryFactory;
 use Doctrine\Persistence\Mapping\Driver\MappingDriver;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\ContainerBuilderProxy;
+use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
+use Sicet7\Faro\ORM\Interfaces\EntityRepositoryInterface;
+use Sicet7\Faro\ORM\Interfaces\HasEntitiesInterface;
 
 use function DI\create;
+use function DI\factory;
 use function DI\get;
 
 // TODO: Make so that entities have a registration interface that is resolved in this module.
-class Module extends AbstractModule
+class Module extends AbstractModule implements BeforeBuildInterface
 {
+    public const ENTITY_KEY = 'faro-orm.entities';
+
     /**
      * @return string
      */
@@ -47,22 +57,22 @@ class Module extends AbstractModule
     public static function getDefinitions(): array
     {
         return [
-            AttributeDriver::class => function () {
-                return new AttributeDriver([]);
-            },
+            self::ENTITY_KEY => [],
+            AttributeDriver::class => create(AttributeDriver::class)
+                ->constructor(get(self::ENTITY_KEY)),
             MappingDriver::class => get(AttributeDriver::class),
             DBALConfiguration::class => get(ORMConfiguration::class),
             ORMConfiguration::class => function (
                 Config $config,
                 MappingDriver $mappingDriver,
-                ContainerInterface $container
+                ContainerInterface $container,
+                RepositoryFactory $repositoryFactory
             ) {
                 $dbConfig = new ORMConfiguration();
                 $dbConfig->setMetadataDriverImpl($mappingDriver);
                 $dbConfig->setProxyDir($config->get('db.orm.proxyClasses.dir'));
                 $dbConfig->setProxyNamespace($config->get('db.orm.proxyClasses.namespace'));
-                // TODO: Set RepositoryFactory to a implementation which gets from the Container.
-                //$dbConfig->setRepositoryFactory();
+                $dbConfig->setRepositoryFactory($repositoryFactory);
                 if ($config->has('db.orm.cache.metadata')) {
                     $dbConfig->setMetadataCache(
                         $container->get(
@@ -79,6 +89,11 @@ class Module extends AbstractModule
                 }
                 return $dbConfig;
             },
+            ContainerRepositoryFactory::class => create(ContainerRepositoryFactory::class)->constructor(
+                get(ContainerInterface::class),
+                get(FactoryInterface::class)
+            ),
+            RepositoryFactory::class => get(ContainerRepositoryFactory::class),
             DoctrineEventConverter::class => create(DoctrineEventConverter::class)->constructor(
                 get(ListenerProviderInterface::class),
                 get(EventDispatcherInterface::class),
@@ -105,5 +120,42 @@ class Module extends AbstractModule
             },
             EntityManagerInterface::class => get(EntityManager::class),
         ];
+    }
+
+    /**
+     * @param ContainerBuilderProxy $builderProxy
+     * @return void
+     * @throws \Sicet7\Faro\Core\Exception\ModuleException
+     */
+    public static function beforeBuild(
+        ContainerBuilderProxy $builderProxy
+    ): void {
+        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($builderProxy) {
+            if (!is_subclass_of($moduleFqcn, HasEntitiesInterface::class)) {
+                return;
+            }
+            $entities = $moduleFqcn::getEntities();
+            $foundEntities = [];
+            foreach ($entities as $entity) {
+                $attributes = (new \ReflectionClass($entity))->getAttributes(Entity::class);
+                if (empty($attributes)) {
+                    continue;
+                }
+                /** @var Entity $instance */
+                $instance = $attributes[array_key_first($attributes)]->newInstance();
+                if (
+                    $instance->repositoryClass !== null &&
+                    !$builderProxy->getModuleList()->isObjectDefined($instance->repositoryClass) &&
+                    is_subclass_of($instance->repositoryClass, EntityRepositoryInterface::class)
+                ) {
+                    $builderProxy->addDefinition(
+                        $instance->repositoryClass,
+                        factory([EntityRepositoryFactory::class, 'create'])
+                    );
+                }
+                $foundEntities[] = $entity;
+            }
+            $builderProxy->addDefinition(self::ENTITY_KEY, $foundEntities);
+        });
     }
 }

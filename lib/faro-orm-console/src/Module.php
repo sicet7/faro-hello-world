@@ -46,19 +46,18 @@ use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Core\Exception\ModuleException;
-use Sicet7\Faro\Core\Interfaces\AfterBuildInterface;
-use Sicet7\Faro\Core\Interfaces\AfterSetupInterface;
 use Doctrine\Migrations\AbstractMigration;
-
 use Sicet7\Faro\Core\ModuleList;
+use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
 use Sicet7\Faro\ORM\Console\Interfaces\HasMigrationsInterface;
+use Sicet7\Faro\ORM\Console\Listeners\MigrationConfigurationFreeze;
+
 use function DI\create;
 use function DI\get;
 
 class Module extends AbstractModule implements
     HasCommandsInterface,
-    AfterSetupInterface,
-    AfterBuildInterface
+    HasListenersInterface
 {
     /**
      * @return string
@@ -172,12 +171,25 @@ class Module extends AbstractModule implements
     }
 
     /**
+     * @return string[]
+     */
+    public static function getListeners(): array
+    {
+        return [
+            MigrationConfigurationFreeze::class
+        ];
+    }
+
+    /**
      * @param ContainerInterface $container
      * @return void
      * @throws ModuleException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public static function afterBuild(ContainerInterface $container): void
+    public static function setup(ContainerInterface $container): void
     {
+        /** @var ModuleList $moduleList */
         $moduleList = $container->get(ModuleList::class);
         $moduleList->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($container) {
             if (!is_subclass_of($moduleFqcn, HasMigrationsInterface::class)) {
@@ -196,14 +208,5 @@ class Module extends AbstractModule implements
                 $configuration->addMigrationClass($migration);
             }
         });
-    }
-
-    /**
-     * @param ContainerInterface $container
-     * @return void
-     */
-    public static function afterSetup(ContainerInterface $container): void
-    {
-        $container->get(MigrationConfiguration::class)->freeze();
     }
 }

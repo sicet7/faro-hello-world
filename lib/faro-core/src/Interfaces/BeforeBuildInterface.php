@@ -3,13 +3,13 @@
 namespace Sicet7\Faro\Core\Interfaces;
 
 use DI\ContainerBuilder;
+use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\ModuleList;
 
 interface BeforeBuildInterface
 {
     /**
-     * @param ModuleList $moduleList
-     * @param ContainerBuilder $containerBuilder
+     * @param ContainerBuilderProxy $builderProxy
      */
-    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void;
+    public static function beforeBuild(ContainerBuilderProxy $builderProxy): void;
 }

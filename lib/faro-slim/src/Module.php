@@ -12,6 +12,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Invoker\CallableResolver as PHPDICallableResolver;
+use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
 use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
@@ -128,20 +129,17 @@ class Module extends AbstractModule implements HasListenersInterface, BeforeBuil
     }
 
     /**
-     * @param ModuleList $moduleList
-     * @param ContainerBuilder $containerBuilder
+     * @param ContainerBuilderProxy $builderProxy
      * @return void
      */
-    public static function beforeBuild(ModuleList $moduleList, ContainerBuilder $containerBuilder): void
+    public static function beforeBuild(ContainerBuilderProxy $builderProxy): void
     {
-        foreach ($moduleList->getLoadedModules() as $loadedModule) {
-            if (is_subclass_of($loadedModule, HasRoutesInterface::class)) {
-                foreach ($loadedModule::getRoutes() as $routeFqcn) {
-                    $containerBuilder->addDefinitions([
-                        $routeFqcn => factory([RouteFactory::class, 'create']),
-                    ]);
+        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($builderProxy) {
+            if (is_subclass_of($moduleFqcn, HasRoutesInterface::class)) {
+                foreach ($moduleFqcn::getRoutes() as $routeFqcn) {
+                    $builderProxy->addDefinition($routeFqcn, factory([RouteFactory::class, 'create']));
                 }
             }
-        }
+        });
     }
 }

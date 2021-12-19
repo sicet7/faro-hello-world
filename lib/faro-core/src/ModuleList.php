@@ -17,14 +17,24 @@ class ModuleList
     private array $registeredModules;
 
     /**
+     * @var array
+     */
+    private array $definedObjects;
+
+    /**
      * ModuleList constructor.
      * @param array $loadedModules
      * @param array $registeredModules
+     * @param array $definedObjects
      */
-    public function __construct(array $loadedModules, array $registeredModules)
-    {
+    public function __construct(
+        array $loadedModules,
+        array $registeredModules,
+        array $definedObjects
+    ) {
         $this->loadedModules = $loadedModules;
         $this->registeredModules = $registeredModules;
+        $this->definedObjects = $definedObjects;
     }
 
     /**
@@ -41,6 +51,14 @@ class ModuleList
     public function getRegisteredModules(): array
     {
         return $this->registeredModules;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefinedObjects(): array
+    {
+        return $this->definedObjects;
     }
 
     /**
@@ -80,6 +98,24 @@ class ModuleList
     }
 
     /**
+     * @param string $fqcn
+     * @return bool
+     */
+    public function isObjectDefined(string $fqcn): bool
+    {
+        return array_key_exists($fqcn, $this->definedObjects);
+    }
+
+    /**
+     * @param string $fqcn
+     * @return string|null
+     */
+    public function findDefiningModule(string $fqcn): ?string
+    {
+        return $this->definedObjects[$fqcn] ?? null;
+    }
+
+    /**
      * @param callable $callable
      * @return void
      * @throws ModuleException
@@ -89,59 +125,12 @@ class ModuleList
         $moduleList = $this->getLoadedModules();
         $alreadyRan = [];
         foreach ($moduleList as $moduleFqcn) {
-            $this->runCallableOnDependencyOrder(
+            ModuleContainer::runCallableOnDependencyOrder(
                 $moduleList,
                 $moduleFqcn,
                 $callable,
                 $alreadyRan
             );
         }
-    }
-
-    /**
-     * @param array $moduleList
-     * @param string $moduleFqcn
-     * @param callable $callable
-     * @param array $alreadyRan
-     * @param string|null $initialFqcn
-     * @return void
-     * @throws ModuleException
-     */
-    private function runCallableOnDependencyOrder(
-        array $moduleList,
-        string $moduleFqcn,
-        callable $callable,
-        array &$alreadyRan,
-        ?string $initialFqcn = null
-    ): void {
-        /** @var AbstractModule $moduleFqcn */
-        $name = $moduleFqcn::getName();
-        if (in_array($moduleFqcn, $alreadyRan)) {
-            return;
-        }
-        if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $name . '".');
-        }
-        if ($initialFqcn === null) {
-            $initialFqcn = $moduleFqcn;
-        }
-        foreach ($moduleFqcn::getDependencies() as $dependency) {
-            if (!array_key_exists($dependency, $moduleList)) {
-                throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $name . '".'
-                );
-            }
-            $dependencyFqcn = $moduleList[$dependency];
-            /** @var AbstractModule $dependencyFqcn */
-            $this->runCallableOnDependencyOrder(
-                $moduleList,
-                $dependencyFqcn,
-                $callable,
-                $alreadyRan,
-                $initialFqcn
-            );
-        }
-        $callable($moduleFqcn);
-        $alreadyRan[$name] = $moduleFqcn;
     }
 }

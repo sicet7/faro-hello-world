@@ -7,12 +7,15 @@ use DI\DependencyException;
 use DI\NotFoundException;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
-use Sicet7\Faro\Core\Interfaces\AfterBuildInterface;
-use Sicet7\Faro\Core\Interfaces\AfterSetupInterface;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
+
+use function DI\create;
+use function DI\get;
 
 class ModuleContainer
 {
+    private const NAME = 'core';
+
     /**
      * @var array
      */
@@ -120,46 +123,91 @@ class ModuleContainer
         }
         self::resolveModuleList();
         $loadedModules = [];
+        $definedObjects = [];
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->useAutowiring(false);
         $containerBuilder->useAnnotations(false);
         $moduleList = static::getModuleList();
         foreach ($moduleList as $moduleName => $moduleFqcn) {
-            self::loadModule($moduleList, $moduleFqcn, $containerBuilder, $loadedModules);
+            self::runCallableOnDependencyOrder(
+                $moduleList,
+                $moduleFqcn,
+                function (string $moduleFqcn) use (&$definedObjects, $containerBuilder) {
+                    $definitions = $moduleFqcn::getDefinitions();
+                    if (!empty($definitions)) {
+                        foreach (array_keys($definitions) as $definitionFqcn) {
+                            if (!is_string($definitionFqcn)) {
+                                continue;
+                            }
+                            $definedObjects[$definitionFqcn] = $moduleFqcn;
+                        }
+                        $containerBuilder->addDefinitions($definitions);
+                    }
+                },
+                $loadedModules
+            );
         }
-        $moduleListContainer = new ModuleList($loadedModules, $moduleList);
+
+        $definedObjects[BuildLock::class] = self::NAME;
+
         $containerBuilder->addDefinitions([
-            ModuleList::class => $moduleListContainer,
-            BuildLock::class => new BuildLock(),
+            BuildLock::class => create(BuildLock::class)
+                ->constructor(get(ContainerInterface::class)),
         ]);
 
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
-            if (is_subclass_of($moduleFqcn, BeforeBuildInterface::class)) {
-                $moduleFqcn::beforeBuild($moduleListContainer, $containerBuilder);
-            }
+        $beforeBuild = [];
+        foreach ($loadedModules as $moduleFqcn) {
+            self::runCallableOnDependencyOrder(
+                $loadedModules,
+                $moduleFqcn,
+                function (string $moduleFqcn) use ($containerBuilder, $loadedModules, $moduleList, &$definedObjects) {
+                    if (is_subclass_of($moduleFqcn, BeforeBuildInterface::class)) {
+                        $containerBuilderProxy = new ContainerBuilderProxy(
+                            $containerBuilder,
+                            new ModuleList(
+                                $loadedModules,
+                                $moduleList,
+                                $definedObjects
+                            ),
+                            $moduleFqcn
+                        );
+                        $moduleFqcn::beforeBuild($containerBuilderProxy);
+                        $definedObjects = $containerBuilderProxy->getModuleList()->getDefinedObjects();
+                    }
+                },
+                $beforeBuild
+            );
         }
 
+        $definedObjects[ModuleList::class] = self::NAME;
+
         if (!empty($customDefinitions)) {
+            foreach (array_filter(array_keys($customDefinitions), 'is_string') as $def) {
+                $definedObjects[$def] = self::NAME;
+            }
             $containerBuilder->addDefinitions($customDefinitions);
         }
 
+        $containerBuilder->addDefinitions([
+            ModuleList::class => new ModuleList(
+                $loadedModules,
+                $moduleList,
+                $definedObjects
+            ),
+        ]);
+
         $container = $containerBuilder->build();
 
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
-            if (is_subclass_of($moduleFqcn, AfterBuildInterface::class)) {
-                $moduleFqcn::afterBuild($container);
-            }
-        }
-
         $setupModules = [];
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
-            self::setupModule($loadedModules, $moduleFqcn, $container, $setupModules);
-        }
-
-        foreach ($moduleListContainer->getLoadedModules() as $moduleFqcn) {
-            if (is_subclass_of($moduleFqcn, AfterSetupInterface::class)) {
-                $moduleFqcn::afterSetup($container);
-            }
+        foreach ($loadedModules as $moduleFqcn) {
+            self::runCallableOnDependencyOrder(
+                $loadedModules,
+                $moduleFqcn,
+                function (string $moduleFqcn) use ($container) {
+                    $moduleFqcn::setup($container);
+                },
+                $setupModules
+            );
         }
 
         $container->get(BuildLock::class)->lock();
@@ -167,27 +215,28 @@ class ModuleContainer
     }
 
     /**
-     * @param string[] $moduleList
+     * @param array $moduleList
      * @param string $moduleFqcn
-     * @param ContainerBuilder $builder
-     * @param array $loadedModules
+     * @param callable $callable
+     * @param array $alreadyRan
      * @param string|null $initialFqcn
      * @return void
      * @throws ModuleException
      */
-    private static function loadModule(
+    final public static function runCallableOnDependencyOrder(
         array $moduleList,
         string $moduleFqcn,
-        ContainerBuilder $builder,
-        array &$loadedModules,
+        callable $callable,
+        array &$alreadyRan,
         ?string $initialFqcn = null
     ): void {
         /** @var AbstractModule $moduleFqcn */
-        if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $loadedModules)) {
+        $name = $moduleFqcn::getName();
+        if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $alreadyRan)) {
             return;
         }
         if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqcn::getName() . '".');
+            throw new ModuleException('Dependency loop detected for module: "' . $name . '".');
         }
         if ($initialFqcn === null) {
             $initialFqcn = $moduleFqcn;
@@ -195,57 +244,20 @@ class ModuleContainer
         foreach ($moduleFqcn::getDependencies() as $dependency) {
             if (!array_key_exists($dependency, $moduleList)) {
                 throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqcn::getName() . '".'
+                    'Missing dependency: "' . $dependency . '" for module: "' . $name . '".'
                 );
             }
             $dependencyFqcn = $moduleList[$dependency];
             /** @var AbstractModule $dependencyFqcn */
-            self::loadModule($moduleList, $dependencyFqcn, $builder, $loadedModules, $initialFqcn);
+            self::runCallableOnDependencyOrder(
+                $moduleList,
+                $dependencyFqcn,
+                $callable,
+                $alreadyRan,
+                $initialFqcn
+            );
         }
-        $definitions = $moduleFqcn::getDefinitions();
-        if (!empty($definitions)) {
-            $builder->addDefinitions($definitions);
-        }
-        $loadedModules[$moduleFqcn::getName()] = $moduleFqcn;
-    }
-
-    /**
-     * @param string[] $moduleList
-     * @param string $moduleFqcn
-     * @param ContainerInterface $container
-     * @param array $setupModules
-     * @param string|null $initialFqcn
-     * @return void
-     * @throws NotFoundException|DependencyException|ModuleException
-     */
-    private static function setupModule(
-        array $moduleList,
-        string $moduleFqcn,
-        ContainerInterface $container,
-        array &$setupModules,
-        ?string $initialFqcn = null
-    ): void {
-        /** @var AbstractModule $moduleFqcn */
-        if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $setupModules)) {
-            return;
-        }
-        if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqcn::getName() . '".');
-        }
-        if ($initialFqcn === null) {
-            $initialFqcn = $moduleFqcn;
-        }
-        foreach ($moduleFqcn::getDependencies() as $dependency) {
-            if (!array_key_exists($dependency, $moduleList)) {
-                throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $moduleFqcn::getName() . '".'
-                );
-            }
-            $dependencyFqcn = $moduleList[$dependency];
-            /** @var AbstractModule $dependencyFqcn */
-            self::setupModule($moduleList, $dependencyFqcn, $container, $setupModules, $initialFqcn);
-        }
-        $moduleFqcn::setup($container);
-        $setupModules[$moduleFqcn::getName()] = $moduleFqcn;
+        $callable($moduleFqcn);
+        $alreadyRan[$name] = $moduleFqcn;
     }
 }

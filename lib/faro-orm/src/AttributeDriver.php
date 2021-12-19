@@ -10,6 +10,15 @@ class AttributeDriver extends \Doctrine\ORM\Mapping\Driver\AttributeDriver
     private array $classes = [];
 
     /**
+     * @param array $classes
+     */
+    public function __construct(array $classes)
+    {
+        parent::__construct([]);
+        $this->classes = $classes;
+    }
+
+    /**
      * @param array $paths
      * @return void
      */
