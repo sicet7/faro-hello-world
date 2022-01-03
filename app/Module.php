@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Database\Entities\TestEntity;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;
@@ -10,8 +11,9 @@ use Sicet7\Faro\Config\Exceptions\ConfigException;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\ORM\Interfaces\HasEntitiesInterface;
 
-class Module extends AbstractModule implements HasConfigInterface
+class Module extends AbstractModule implements HasConfigInterface, HasEntitiesInterface
 {
     /**
      * @return string
@@ -51,5 +53,15 @@ class Module extends AbstractModule implements HasConfigInterface
             null,
             true
         ));
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getEntities(): array
+    {
+        return [
+            TestEntity::class,
+        ];
     }
 }

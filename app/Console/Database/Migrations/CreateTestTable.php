@@ -15,7 +15,9 @@ class CreateTestTable extends AbstractMigration
     public function up(Schema $schema): void
     {
         $table = $schema->createTable('tests');
-        $table->addColumn('id', Types::INTEGER)->setNotnull(true);
+        $table->addColumn('id', Types::INTEGER)
+            ->setNotnull(true)
+            ->setAutoincrement(true);
         $table->setPrimaryKey(['id']);
         $table->addColumn('name', Types::STRING)->setNotnull(true)->setLength(255);
     }

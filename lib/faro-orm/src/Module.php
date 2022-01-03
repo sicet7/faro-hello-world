@@ -13,6 +13,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Repository\RepositoryFactory;
 use Doctrine\Persistence\Mapping\Driver\MappingDriver;
+use Invoker\ParameterResolver\AssociativeArrayResolver;
+use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
+use Invoker\ParameterResolver\DefaultValueResolver;
+use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Config;
@@ -27,7 +31,6 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 
-// TODO: Make so that entities have a registration interface that is resolved in this module.
 class Module extends AbstractModule implements BeforeBuildInterface
 {
     public const ENTITY_KEY = 'faro-orm.entities';
@@ -119,6 +122,14 @@ class Module extends AbstractModule implements BeforeBuildInterface
                 return EntityManager::create($connection, $configuration, $eventManager);
             },
             EntityManagerInterface::class => get(EntityManager::class),
+            EntityRepositoryFactory::class => create(EntityRepositoryFactory::class)
+        ->constructor(create(ResolverChain::class)
+            ->constructor([
+                create(AssociativeArrayResolver::class),
+                create(TypeHintContainerResolver::class)
+                    ->constructor(get(ContainerInterface::class)),
+                create(DefaultValueResolver::class),
+            ])),
         ];
     }
 

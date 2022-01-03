@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\HelloWorldCommand;
+use App\Console\Commands\NewEntry;
 use App\Console\Commands\PingCommand;
 use App\Console\Database\Migrations\CreateTestTable;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
@@ -37,6 +38,7 @@ class Module extends AbstractModule implements HasCommandsInterface, HasMigratio
         return [
             HelloWorldCommand::class,
             PingCommand::class,
+            NewEntry::class,
         ];
     }
 
