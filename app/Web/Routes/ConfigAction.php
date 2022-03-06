@@ -30,7 +30,7 @@ class ConfigAction
      */
     public function __invoke(ResponseInterface $response): ResponseInterface
     {
-        $response->getBody()->write(var_export($this->config->getConfig(), true));
+        $response->getBody()->write('<pre>' . var_export($this->config->getConfig(), true) . '</pre>');
         return $response;
     }
 }

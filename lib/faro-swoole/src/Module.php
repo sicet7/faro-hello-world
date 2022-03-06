@@ -2,13 +2,17 @@
 
 namespace Sicet7\Faro\Swoole;
 
+use DI\FactoryInterface;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
 use Sicet7\Faro\Swoole\Http\Server\Initializer;
+use Sicet7\Faro\Swoole\Http\Server\Runner;
+use Sicet7\Faro\Swoole\Http\Server\RunnerInterface;
 
 use function DI\create;
+use function DI\get;
 
 class Module extends AbstractModule implements HasCommandsInterface, HasConfigInterface
 {
@@ -34,7 +38,9 @@ class Module extends AbstractModule implements HasCommandsInterface, HasConfigIn
     public static function getDefinitions(): array
     {
         return [
-            Initializer::class => create(Initializer::class),
+            Initializer::class => create(Initializer::class)
+                ->constructor(get(FactoryInterface::class)),
+            RunnerInterface::class => create(Runner::class),
         ];
     }
 

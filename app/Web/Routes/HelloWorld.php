@@ -11,6 +11,7 @@ class HelloWorld
 {
     /**
      * @param ResponseInterface $response
+     * @param ModuleList $list
      * @return ResponseInterface
      */
     public function __invoke(ResponseInterface $response, ModuleList $list): ResponseInterface

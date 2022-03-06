@@ -26,7 +26,7 @@ use Swoole\Http\Server;
 use function DI\create;
 use function DI\get;
 
-class Runner
+class Runner implements RunnerInterface
 {
     /**
      * @var ContainerInterface|null
@@ -59,7 +59,7 @@ class Runner
      */
     public function onWorkerStart(Server $server, int $workerId): void
     {
-        $this->container = ModuleContainer::buildContainer([
+        $this->makeContainer([
             WorkerState::class => new WorkerState($workerId, $server),
             Psr17Factory::class => create(Psr17Factory::class),
             ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state, Config $config) {
@@ -68,8 +68,8 @@ class Runner
             ErrorManager::class => create(ErrorManager::class)
                 ->constructor(get(ContainerInterface::class)),
         ]);
-        $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
-        $this->container->get(ErrorHandler::class)->bootMessage();
+        $this->getContainer()->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
+        $this->getContainer()->get(ErrorHandler::class)->bootMessage();
     }
 
     /**
@@ -79,24 +79,24 @@ class Runner
      */
     public function onRequest(Request $request, Response $response): void
     {
-        $errorManager = $this->container->get(ErrorManager::class);
+        $errorManager = $this->getContainer()->get(ErrorManager::class);
         $this->updateWorkerState($request, $response);
         try {
-            $config = $this->container->get(Config::class);
+            $config = $this->getContainer()->get(Config::class);
             if ($config->has('app.name')) {
                 $this->getWorkerState()->getResponse()->setHeader('Server', $config->get('app.name'));
             }
             if ($errorManager->inMaintenance()) {
                 return;
             }
-            $psr17Factory = $this->container->get(Psr17Factory::class);
+            $psr17Factory = $this->getContainer()->get(Psr17Factory::class);
             $requestConverter = new SwooleServerRequestConverter(
                 $psr17Factory,
                 $psr17Factory,
                 $psr17Factory,
                 $psr17Factory
             );
-            $eventDispatcher = $this->container->get(EventDispatcherInterface::class);
+            $eventDispatcher = $this->getContainer()->get(EventDispatcherInterface::class);
             $requestEvent = new RequestEvent(
                 $requestConverter->createFromSwoole(
                     $this->getWorkerState()->getRequest()
@@ -140,8 +140,8 @@ class Runner
      */
     public function onWorkerStop(Server $server, int $workerId): void
     {
-        $this->container->get(EventDispatcherInterface::class)->dispatch(new WorkerStop($server, $workerId));
-        $this->container = null;
+        $this->getContainer()->get(EventDispatcherInterface::class)->dispatch(new WorkerStop($server, $workerId));
+        $this->unsetContainer();
     }
 
     /**
@@ -151,7 +151,7 @@ class Runner
      */
     protected function updateWorkerState(Request $request, Response $response): void
     {
-        $state = $this->container->get(WorkerState::class);
+        $state = $this->getWorkerState();
         $state->setRequest($request);
         $state->setResponse($response);
     }
@@ -161,7 +161,7 @@ class Runner
      */
     protected function getWorkerState(): WorkerState
     {
-        return $this->container->get(WorkerState::class);
+        return $this->getContainer()->get(WorkerState::class);
     }
 
     /**
@@ -169,9 +169,34 @@ class Runner
      */
     protected function getLogger(): ?LoggerInterface
     {
-        if (!$this->container?->has(LoggerInterface::class)) {
+        if (!$this->getContainer()?->has(LoggerInterface::class)) {
             return null;
         }
-        return $this->container->get(LoggerInterface::class);
+        return $this->getContainer()->get(LoggerInterface::class);
+    }
+
+    /**
+     * @param array $definitions
+     * @return void
+     */
+    protected function makeContainer(array $definitions = []): void
+    {
+        $this->container = ModuleContainer::buildContainer($definitions);
+    }
+
+    /**
+     * @return ContainerInterface|null
+     */
+    protected function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * @return void
+     */
+    protected function unsetContainer(): void
+    {
+        $this->container = null;
     }
 }

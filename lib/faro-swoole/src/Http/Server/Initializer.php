@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\Swoole\Http\Server;
 
+use DI\FactoryInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Swoole\Exceptions\SwooleException;
 use Swoole\Http\Server;
@@ -18,7 +19,20 @@ class Initializer
     /**
      * @var Runner|null
      */
-    private ?Runner $runner = null;
+    private ?RunnerInterface $runner = null;
+
+    /**
+     * @var FactoryInterface
+     */
+    private FactoryInterface $factory;
+
+    /**
+     * @param FactoryInterface $factory
+     */
+    public function __construct(FactoryInterface $factory)
+    {
+        $this->factory = $factory;
+    }
 
     /**
      * @param string $ip
@@ -33,7 +47,7 @@ class Initializer
             $socketType = $socketType | SWOOLE_SSL;
         }
         $this->server = new Server($ip, $port, SWOOLE_PROCESS, $socketType);
-        $this->runner = new Runner();
+        $this->runner = $this->factory->make(RunnerInterface::class);
     }
 
     /**
