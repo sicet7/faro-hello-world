@@ -11,6 +11,7 @@ use Sicet7\Faro\Config\Exceptions\ConfigException;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\ORM\Interfaces\HasEntitiesInterface;
 
 class Module extends AbstractModule implements HasConfigInterface, HasEntitiesInterface
@@ -60,8 +61,6 @@ class Module extends AbstractModule implements HasConfigInterface, HasEntitiesIn
      */
     public static function getEntities(): array
     {
-        return [
-            TestEntity::class,
-        ];
+        return PSR4::getFQCNs('App\\Database\\Entities', __DIR__ . '/Database/Entities');
     }
 }

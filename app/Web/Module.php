@@ -6,6 +6,7 @@ use App\Web\Routes\ConfigAction;
 use App\Web\Routes\HelloWorld;
 use App\Web\Routes\Ping;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\Slim\Interfaces\HasRoutesInterface;
 
 class Module extends AbstractModule implements HasRoutesInterface
@@ -41,10 +42,6 @@ class Module extends AbstractModule implements HasRoutesInterface
      */
     public static function getRoutes(): array
     {
-        return [
-            HelloWorld::class,
-            Ping::class,
-            ConfigAction::class,
-        ];
+        return PSR4::getFQCNs('App\\Web\\Routes', __DIR__ . '/Routes');
     }
 }

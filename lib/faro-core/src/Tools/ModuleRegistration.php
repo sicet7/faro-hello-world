@@ -4,7 +4,6 @@ namespace Sicet7\Faro\Core\Tools;
 
 use Sicet7\Faro\Core\ModuleContainer;
 
-// TODO: Make a tool that generates FQCN's from a PSR-4 directory and initial Namespace.
 class ModuleRegistration
 {
     /**

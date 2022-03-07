@@ -181,6 +181,7 @@ class Module extends AbstractModule implements
     }
 
     /**
+     * @TODO: Make Migrations loading contain some sort of dependency handling other than module dependency.
      * @param ContainerInterface $container
      * @return void
      * @throws ModuleException

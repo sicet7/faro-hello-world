@@ -8,6 +8,7 @@ use App\Console\Commands\PingCommand;
 use App\Console\Database\Migrations\CreateTestTable;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\ORM\Console\Interfaces\HasMigrationsInterface;
 
 class Module extends AbstractModule implements HasCommandsInterface, HasMigrationsInterface
@@ -35,11 +36,7 @@ class Module extends AbstractModule implements HasCommandsInterface, HasMigratio
      */
     public static function getCommands(): array
     {
-        return [
-            HelloWorldCommand::class,
-            PingCommand::class,
-            NewEntry::class,
-        ];
+        return PSR4::getFQCNs('App\\Console\\Commands', __DIR__ . '/Commands');
     }
 
     /**
