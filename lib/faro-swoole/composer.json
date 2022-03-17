@@ -5,13 +5,12 @@
     "description": "The library connecting swoole to the faro framework",
     "require": {
         "php": ">=8.0",
-        "ext-swoole": ">=4.6",
         "ext-posix": "*",
         "sicet7/faro-config": "*",
         "sicet7/faro-console": "*",
         "sicet7/faro-web": "*",
         "sicet7/faro-log": "*",
-        "ilexn/swoole-convert-psr7": "^0.3.0",
+        "ilexn/swoole-convert-psr7": "^0.6.0",
         "nyholm/psr7": "^1.4"
     },
     "require-dev": {

@@ -8,7 +8,6 @@ use Psr\EventDispatcher\StoppableEventInterface;
 
 class Dispatcher implements EventDispatcherInterface
 {
-
     /**
      * @var ListenerProviderInterface
      */

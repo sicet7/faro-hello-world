@@ -26,7 +26,6 @@ use function DI\get;
 
 class Module extends AbstractModule implements BeforeBuildInterface
 {
-
     /**
      * @return string
      */

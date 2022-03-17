@@ -14,7 +14,6 @@ use Slim\Interfaces\InvocationStrategyInterface;
 
 class ControllerInvocationStrategyFactory implements ControllerInvocationStrategyFactoryInterface
 {
-
     /**
      * @var ContainerInterface
      */

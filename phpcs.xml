@@ -4,7 +4,7 @@
 
     <description>PHPCS configuration file.</description>
 
-    <file>src</file>
+    <file>lib</file>
 
     <config name="php_version" value="80001"/>
 

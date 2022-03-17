@@ -5,7 +5,9 @@ namespace Sicet7\Faro\Swoole\Http\Server;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Monolog\Utils;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Log\LoggerInterface;
@@ -15,6 +17,7 @@ use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Swoole\Http\ErrorManager;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
+use Sicet7\Faro\Swoole\Http\ServerRequestBuilderInterface;
 use Sicet7\Faro\Web\ModuleContainer;
 use Sicet7\Faro\Web\RequestEvent;
 use Ilex\SwoolePsr7\SwooleServerRequestConverter;
@@ -22,9 +25,6 @@ use Ilex\SwoolePsr7\SwooleResponseConverter;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
-
-use function DI\create;
-use function DI\get;
 
 class Runner implements RunnerInterface
 {
@@ -61,12 +61,6 @@ class Runner implements RunnerInterface
     {
         $this->makeContainer([
             WorkerState::class => new WorkerState($workerId, $server),
-            Psr17Factory::class => create(Psr17Factory::class),
-            ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state, Config $config) {
-                return ErrorHandler::create($logger, $state, $config);
-            },
-            ErrorManager::class => create(ErrorManager::class)
-                ->constructor(get(ContainerInterface::class)),
         ]);
         $this->getContainer()->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
         $this->getContainer()->get(ErrorHandler::class)->bootMessage();
@@ -79,8 +73,20 @@ class Runner implements RunnerInterface
      */
     public function onRequest(Request $request, Response $response): void
     {
-        $errorManager = $this->getContainer()->get(ErrorManager::class);
-        $this->updateWorkerState($request, $response);
+        try {
+            $errorManager = $this->getContainer()->get(ErrorManager::class);
+        } catch (ContainerExceptionInterface | NotFoundExceptionInterface $exception) {
+            $response->status(500, 'Internal Server Error');
+            $response->end('ErrorManager: Load failed.');
+            return;
+        }
+        try {
+            $this->updateWorkerState($request, $response);
+        } catch (ContainerExceptionInterface | NotFoundExceptionInterface $exception) {
+            $response->status(500, 'Internal Server Error');
+            $response->end('WorkerState: Update failed.');
+            return;
+        }
         try {
             $config = $this->getContainer()->get(Config::class);
             if ($config->has('app.name')) {
@@ -89,19 +95,13 @@ class Runner implements RunnerInterface
             if ($errorManager->inMaintenance()) {
                 return;
             }
-            $psr17Factory = $this->getContainer()->get(Psr17Factory::class);
-            $requestConverter = new SwooleServerRequestConverter(
-                $psr17Factory,
-                $psr17Factory,
-                $psr17Factory,
-                $psr17Factory
-            );
+            /** @var ServerRequestBuilderInterface $requestBuilder */
+            $requestBuilder = $this->getContainer()->get(ServerRequestBuilderInterface::class);
+            /** @var EventDispatcherInterface $eventDispatcher */
             $eventDispatcher = $this->getContainer()->get(EventDispatcherInterface::class);
-            $requestEvent = new RequestEvent(
-                $requestConverter->createFromSwoole(
-                    $this->getWorkerState()->getRequest()
-                )
-            );
+            /** @var ResponseEmitterInterface $responseEmitter */
+            $responseEmitter = $this->getContainer()->get(ResponseEmitterInterface::class);
+            $requestEvent = new RequestEvent($requestBuilder->build());
             $eventDispatcher->dispatch($requestEvent);
             if ($requestEvent->getResponse() === null) {
                 $this->getLogger()?->error(
@@ -113,10 +113,7 @@ class Runner implements RunnerInterface
                 $errorManager->displayError(501);
                 return;
             }
-            $responseConverter = new SwooleResponseConverter(
-                $this->getWorkerState()->getResponse()
-            );
-            $responseConverter->send($requestEvent->getResponse());
+            $responseEmitter->emit($requestEvent->getResponse());
         } catch (\Throwable $e) {
             $this->getLogger()?->log(
                 LogLevel::ALERT,
@@ -148,6 +145,8 @@ class Runner implements RunnerInterface
      * @param Request $request
      * @param Response $response
      * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     protected function updateWorkerState(Request $request, Response $response): void
     {
@@ -158,6 +157,8 @@ class Runner implements RunnerInterface
 
     /**
      * @return WorkerState
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     protected function getWorkerState(): WorkerState
     {

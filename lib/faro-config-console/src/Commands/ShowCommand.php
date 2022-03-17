@@ -17,7 +17,6 @@ use Symfony\Component\VarDumper\Dumper\CliDumper;
 #[Name('config:show')]
 class ShowCommand extends Command
 {
-
     /**
      * @var Config
      */

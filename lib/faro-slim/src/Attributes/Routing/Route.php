@@ -2,7 +2,7 @@
 
 namespace Sicet7\Faro\Slim\Attributes\Routing;
 
-use \Attribute;
+use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
 class Route

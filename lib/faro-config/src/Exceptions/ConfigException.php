@@ -6,5 +6,4 @@ use Psr\Container\ContainerExceptionInterface;
 
 class ConfigException extends \Exception implements ContainerExceptionInterface
 {
-
 }

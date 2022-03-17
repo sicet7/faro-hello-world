@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Web\Routes;
 
 use Psr\Http\Message\ResponseInterface;

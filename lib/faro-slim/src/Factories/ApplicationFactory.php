@@ -9,7 +9,6 @@ use Slim\Factory\AppFactory;
 
 class ApplicationFactory implements ApplicationFactoryInterface
 {
-
     /**
      * @var ContainerInterface
      */

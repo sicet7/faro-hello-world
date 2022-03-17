@@ -10,6 +10,7 @@ interface BeforeBuildInterface
 {
     /**
      * @param ContainerBuilderProxy $builderProxy
+     * @return void
      */
     public static function beforeBuild(ContainerBuilderProxy $builderProxy): void;
 }

@@ -6,7 +6,6 @@ use Doctrine\Common\EventArgs;
 
 abstract class DoctrineEvent
 {
-
     /**
      * @var EventArgs|null
      */

@@ -6,5 +6,4 @@ use Sicet7\Faro\ORM\Events\DoctrineEvent;
 
 class PostUpdateEvent extends DoctrineEvent
 {
-
 }

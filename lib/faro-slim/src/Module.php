@@ -36,7 +36,6 @@ use function DI\get;
 
 class Module extends AbstractModule implements HasListenersInterface, BeforeBuildInterface
 {
-
     /**
      * @return string
      */

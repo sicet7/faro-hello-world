@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Sicet7\Faro\Event\Attributes;
 
 use Attribute;

@@ -10,5 +10,4 @@ use Sicet7\Faro\Core\ModuleContainer as BaseModuleContainer;
 
 class ModuleContainer extends BaseModuleContainer
 {
-
 }

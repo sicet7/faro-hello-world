@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 use Sicet7\Faro\Core\ModuleList;
 use Sicet7\Faro\Slim\Attributes\Routing\Any;
 
-#[Any('/')]
+#[Any('/hello')]
 class HelloWorld
 {
     /**
