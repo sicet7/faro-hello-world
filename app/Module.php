@@ -10,20 +10,12 @@ use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\ORM\Interfaces\HasEntitiesInterface;
 
-class Module extends AbstractModule implements HasConfigInterface, HasEntitiesInterface
+class Module extends BaseModule implements HasConfigInterface, HasEntitiesInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'app';
-    }
-
     /**
      * @return array
      */

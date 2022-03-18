@@ -20,7 +20,7 @@ use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Config;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
@@ -31,17 +31,9 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 
-class Module extends AbstractModule implements BeforeBuildInterface
+class Module extends BaseModule implements BeforeBuildInterface
 {
     public const ENTITY_KEY = 'faro-orm.entities';
-
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-orm';
-    }
 
     /**
      * @return array
@@ -49,8 +41,8 @@ class Module extends AbstractModule implements BeforeBuildInterface
     public static function getDependencies(): array
     {
         return [
-            'faro-event',
-            'faro-log',
+            \Sicet7\Faro\Event\Module::class,
+            \Sicet7\Faro\Log\Module::class,
         ];
     }
 

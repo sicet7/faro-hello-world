@@ -2,22 +2,13 @@
 
 namespace Sicet7\Faro\Config;
 
-use DI\ContainerBuilder;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 
-class Module extends AbstractModule implements BeforeBuildInterface
+class Module extends BaseModule implements BeforeBuildInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-config';
-    }
-
     /**
      * @param ContainerBuilderProxy $builderProxy
      * @return void

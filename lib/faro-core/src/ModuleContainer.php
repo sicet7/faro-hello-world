@@ -5,7 +5,9 @@ namespace Sicet7\Faro\Core;
 use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 
@@ -14,8 +16,6 @@ use function DI\get;
 
 class ModuleContainer
 {
-    private const NAME = 'core';
-
     /**
      * @var array
      */
@@ -28,12 +28,12 @@ class ModuleContainer
      */
     public static function registerModule(string $moduleFqcn): void
     {
-        if (!is_subclass_of($moduleFqcn, AbstractModule::class)) {
+        if (!is_subclass_of($moduleFqcn, BaseModule::class)) {
             throw new ModuleException(
-                'Module: "' . $moduleFqcn . '" does not inherit from: "' . AbstractModule::class . '"'
+                'Module: "' . $moduleFqcn . '" does not inherit from: "' . BaseModule::class . '"'
             );
         }
-        if (in_array($moduleFqcn, static::getModuleList())) {
+        if (in_array(trim($moduleFqcn, " \t\n\r\0\x0B\\"), static::getModuleList())) {
             throw new ModuleException('Module: "' . $moduleFqcn . '" is already registered.');
         }
         static::addModuleToList($moduleFqcn);
@@ -73,62 +73,31 @@ class ModuleContainer
         if (!isset(self::$moduleList[static::class]) || !is_array(self::$moduleList[static::class])) {
             self::$moduleList[static::class] = [];
         }
-        self::$moduleList[static::class][] = $moduleFqcn;
+        self::$moduleList[static::class][] = trim($moduleFqcn, " \t\n\r\0\x0B\\");
     }
 
     /**
-     * @param array $moduleList
-     * @return void
-     */
-    protected static function setModuleList(array $moduleList): void
-    {
-        self::$moduleList[static::class] = $moduleList;
-    }
-
-    /**
-     * @throws ModuleException
-     * @return void
-     */
-    private static function resolveModuleList(): void
-    {
-        $newModuleList = [];
-        foreach (static::getModuleList() as $module) {
-            if (!is_subclass_of($module, AbstractModule::class)) {
-                throw new ModuleException(
-                    'Module: "' . $module . '" does not inherit from: "' . AbstractModule::class . '"'
-                );
-            }
-            $name = $module::getName();
-            if (array_key_exists($name, $newModuleList)) {
-                throw new ModuleException(
-                    'Module name already taken: "' . $name . '".'
-                );
-            }
-            $newModuleList[$name] = $module;
-        }
-        static::setModuleList($newModuleList);
-    }
-
-    /**
+     * @param string $sourceModule
      * @param array $customDefinitions
      * @return ContainerInterface
      * @throws DependencyException
      * @throws ModuleException
      * @throws NotFoundException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    public static function buildContainer(array $customDefinitions = []): ContainerInterface
+    public static function buildContainer(string $sourceModule, array $customDefinitions = []): ContainerInterface
     {
         foreach (self::$moduleList[self::class] as $module) {
             static::tryRegisterModule($module);
         }
-        self::resolveModuleList();
         $loadedModules = [];
         $definedObjects = [];
         $containerBuilder = new ContainerBuilder();
         $containerBuilder->useAutowiring(false);
         $containerBuilder->useAnnotations(false);
         $moduleList = static::getModuleList();
-        foreach ($moduleList as $moduleName => $moduleFqcn) {
+        foreach ($moduleList as $moduleFqcn) {
             self::runCallableOnDependencyOrder(
                 $moduleList,
                 $moduleFqcn,
@@ -148,7 +117,7 @@ class ModuleContainer
             );
         }
 
-        $definedObjects[BuildLock::class] = self::NAME;
+        $definedObjects[BuildLock::class] = BaseModule::class;
 
         $containerBuilder->addDefinitions([
             BuildLock::class => create(BuildLock::class)
@@ -179,11 +148,11 @@ class ModuleContainer
             );
         }
 
-        $definedObjects[ModuleList::class] = self::NAME;
+        $definedObjects[ModuleList::class] = BaseModule::class;
 
         if (!empty($customDefinitions)) {
             foreach (array_filter(array_keys($customDefinitions), 'is_string') as $def) {
-                $definedObjects[$def] = self::NAME;
+                $definedObjects[$def] = $sourceModule;
             }
             $containerBuilder->addDefinitions($customDefinitions);
         }
@@ -230,25 +199,24 @@ class ModuleContainer
         array &$alreadyRan,
         ?string $initialFqcn = null
     ): void {
-        /** @var AbstractModule $moduleFqcn */
-        $name = $moduleFqcn::getName();
+        $moduleFqcn = trim($moduleFqcn, " \t\n\r\0\x0B\\");
+        /** @var BaseModule $moduleFqcn */
         if (!$moduleFqcn::isEnabled() || in_array($moduleFqcn, $alreadyRan)) {
             return;
         }
         if ($initialFqcn !== null && $moduleFqcn == $initialFqcn) {
-            throw new ModuleException('Dependency loop detected for module: "' . $name . '".');
+            throw new ModuleException('Dependency loop detected for module: "' . $moduleFqcn . '".');
         }
         if ($initialFqcn === null) {
             $initialFqcn = $moduleFqcn;
         }
-        foreach ($moduleFqcn::getDependencies() as $dependency) {
-            if (!array_key_exists($dependency, $moduleList)) {
+        foreach ($moduleFqcn::getDependencies() as $dependencyFqcn) {
+            if (!in_array($dependencyFqcn, $moduleList)) {
                 throw new ModuleException(
-                    'Missing dependency: "' . $dependency . '" for module: "' . $name . '".'
+                    'Missing dependency: "' . $dependencyFqcn . '" for module: "' . $moduleFqcn . '".'
                 );
             }
-            $dependencyFqcn = $moduleList[$dependency];
-            /** @var AbstractModule $dependencyFqcn */
+            /** @var BaseModule $dependencyFqcn */
             self::runCallableOnDependencyOrder(
                 $moduleList,
                 $dependencyFqcn,
@@ -258,6 +226,6 @@ class ModuleContainer
             );
         }
         $callable($moduleFqcn);
-        $alreadyRan[$name] = $moduleFqcn;
+        $alreadyRan[] = $moduleFqcn;
     }
 }

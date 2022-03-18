@@ -10,7 +10,7 @@ use Invoker\ParameterResolver\ResolverChain;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Invoker\CallableResolver as PHPDICallableResolver;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
@@ -34,23 +34,15 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 
-class Module extends AbstractModule implements HasListenersInterface, BeforeBuildInterface
+class Module extends BaseModule implements HasListenersInterface, BeforeBuildInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-slim';
-    }
-
     /**
      * @return string[]
      */
     public static function getDependencies(): array
     {
         return [
-            'faro-event',
+            \Sicet7\Faro\Event\Module::class,
         ];
     }
 

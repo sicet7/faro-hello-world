@@ -7,27 +7,19 @@ use App\Console\Commands\NewEntry;
 use App\Console\Commands\PingCommand;
 use App\Console\Database\Migrations\CreateTestTable;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\ORM\Console\Interfaces\HasMigrationsInterface;
 
-class Module extends AbstractModule implements HasCommandsInterface, HasMigrationsInterface
+class Module extends BaseModule implements HasCommandsInterface, HasMigrationsInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'console-app';
-    }
-
     /**
      * @return array
      */
     public static function getDependencies(): array
     {
         return [
-            'faro-console'
+            \Sicet7\Faro\Console\Module::class,
         ];
     }
 

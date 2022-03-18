@@ -44,7 +44,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Doctrine\Migrations\AbstractMigration;
 use Sicet7\Faro\Core\ModuleList;
@@ -55,26 +55,18 @@ use Sicet7\Faro\ORM\Console\Listeners\MigrationConfigurationFreeze;
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule implements
+class Module extends BaseModule implements
     HasCommandsInterface,
     HasListenersInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-orm-console';
-    }
-
     /**
      * @return string[]
      */
     public static function getDependencies(): array
     {
         return [
-            'faro-console',
-            'faro-orm',
+            \Sicet7\Faro\Console\Module::class,
+            \Sicet7\Faro\ORM\Module::class,
         ];
     }
 

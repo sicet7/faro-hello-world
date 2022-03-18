@@ -4,26 +4,18 @@ namespace Sicet7\Faro\Config\Console;
 
 use Sicet7\Faro\Config\Console\Commands\ShowCommand;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 
-class Module extends AbstractModule implements HasCommandsInterface
+class Module extends BaseModule implements HasCommandsInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-config-console';
-    }
-
     /**
      * @return array
      */
     public static function getDependencies(): array
     {
         return [
-            'faro-config',
-            'faro-console',
+            \Sicet7\Faro\Config\Module::class,
+            \Sicet7\Faro\Console\Module::class,
         ];
     }
 

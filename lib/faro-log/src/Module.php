@@ -4,21 +4,13 @@ namespace Sicet7\Faro\Log;
 
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule
+class Module extends BaseModule
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-log';
-    }
-
     /**
      * @return array
      */
@@ -30,7 +22,7 @@ class Module extends AbstractModule
                     'default',
                     [],
                     [],
-                    new \DateTimeZone('UTC')
+                    get(\DateTimeZone::class)
                 ),
             LoggerInterface::class => get(Logger::class),
         ];

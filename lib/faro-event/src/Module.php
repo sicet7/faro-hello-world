@@ -2,14 +2,12 @@
 
 namespace Sicet7\Faro\Event;
 
-use DI\ContainerBuilder;
-use DI\FactoryInterface;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Invoker\ParameterResolver\DefaultValueResolver;
 use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\BuildLock;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
@@ -24,16 +22,8 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 
-class Module extends AbstractModule implements BeforeBuildInterface
+class Module extends BaseModule implements BeforeBuildInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-event';
-    }
-
     /**
      * @return array
      */

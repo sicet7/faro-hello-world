@@ -6,7 +6,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Config\Config;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Swoole\Http\ErrorManager;
 use Sicet7\Faro\Swoole\Http\Server\ErrorHandler;
 use Sicet7\Faro\Swoole\Http\Server\ResponseEmitter;
@@ -18,16 +18,8 @@ use Sicet7\Faro\Swoole\Http\ServerRequestBuilderInterface;
 use function DI\create;
 use function DI\get;
 
-class WebModule extends AbstractModule
+class WebModule extends BaseModule
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-swoole-web';
-    }
-
     /**
      * @return array
      */

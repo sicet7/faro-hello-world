@@ -4,15 +4,8 @@ namespace Sicet7\Faro\Core;
 
 use Psr\Container\ContainerInterface;
 
-abstract class AbstractModule
+class BaseModule
 {
-    /**
-     * Should return the name of the module.
-     *
-     * @return string
-     */
-    abstract public static function getName(): string;
-
     /**
      * Override this method to define custom definitions in the container.
      *

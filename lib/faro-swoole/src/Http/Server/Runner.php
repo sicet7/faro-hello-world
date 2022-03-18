@@ -18,6 +18,7 @@ use Sicet7\Faro\Swoole\Http\ErrorManager;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
 use Sicet7\Faro\Swoole\Http\ServerRequestBuilderInterface;
+use Sicet7\Faro\Swoole\Module;
 use Sicet7\Faro\Web\ModuleContainer;
 use Sicet7\Faro\Web\RequestEvent;
 use Ilex\SwoolePsr7\SwooleServerRequestConverter;
@@ -182,7 +183,7 @@ class Runner implements RunnerInterface
      */
     protected function makeContainer(array $definitions = []): void
     {
-        $this->container = ModuleContainer::buildContainer($definitions);
+        $this->container = ModuleContainer::buildContainer(Module::class, $definitions);
     }
 
     /**

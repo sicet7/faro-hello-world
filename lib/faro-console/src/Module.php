@@ -2,7 +2,6 @@
 
 namespace Sicet7\Faro\Console;
 
-use DI\ContainerBuilder;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Invoker\ParameterResolver\DefaultValueResolver;
@@ -11,7 +10,7 @@ use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Sicet7\Faro\Console\Event\SymfonyDispatcher;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
-use Sicet7\Faro\Core\AbstractModule;
+use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
 use Sicet7\Faro\Core\Exception\ContainerException;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
@@ -24,23 +23,15 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDi
 use function DI\create;
 use function DI\get;
 
-class Module extends AbstractModule implements BeforeBuildInterface
+class Module extends BaseModule implements BeforeBuildInterface
 {
-    /**
-     * @return string
-     */
-    public static function getName(): string
-    {
-        return 'faro-console';
-    }
-
     /**
      * @return string[]
      */
     public static function getDependencies(): array
     {
         return [
-            'faro-event'
+            \Sicet7\Faro\Event\Module::class,
         ];
     }
 
