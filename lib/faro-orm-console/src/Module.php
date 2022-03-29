@@ -65,6 +65,7 @@ class Module extends BaseModule implements
     public static function getDependencies(): array
     {
         return [
+            \Sicet7\Faro\Config\Module::class,
             \Sicet7\Faro\Console\Module::class,
             \Sicet7\Faro\ORM\Module::class,
         ];
@@ -85,13 +86,23 @@ class Module extends BaseModule implements
             },
             MetadataStorageConfiguration::class => get(TableMetadataStorageConfiguration::class),
             MigrationConfiguration::class => function (
-                MetadataStorageConfiguration $metadataStorageConfiguration
+                MetadataStorageConfiguration $metadataStorageConfiguration,
+                Config $config
             ) {
                 $migrationConfiguration = new MigrationConfiguration();
                 $migrationConfiguration->setMigrationOrganization(
                     MigrationConfiguration::VERSIONS_ORGANIZATION_NONE
                 );
                 $migrationConfiguration->setMetadataStorageConfiguration($metadataStorageConfiguration);
+                if (
+                    $config->has('db.migrations') &&
+                    !empty($config->get('db.migrations')) &&
+                    is_array($config->get('db.migrations'))
+                ) {
+                    foreach ($config->get('db.migrations') as $namespace => $path) {
+                        $migrationConfiguration->addMigrationsDirectory($namespace, $path);
+                    }
+                }
                 return $migrationConfiguration;
             },
             ExistingConfiguration::class => create(ExistingConfiguration::class)->constructor(
@@ -143,9 +154,7 @@ class Module extends BaseModule implements
             'orm:schema-tool:create' => CreateCommand::class,
             'orm:schema-tool:update' => UpdateCommand::class,
             'orm:schema-tool:drop' => DropCommand::class,
-            'orm:ensure-production-settings' => EnsureProductionSettingsCommand::class,
             'orm:generate-proxies' => GenerateProxiesCommand::class,
-            'orm:convert-mapping' => ConvertMappingCommand::class,
             'orm:run-dql' => RunDqlCommand::class,
             'orm:validate-schema' => ValidateSchemaCommand::class,
             'orm:info' => InfoCommand::class,
@@ -170,36 +179,5 @@ class Module extends BaseModule implements
         return [
             MigrationConfigurationFreeze::class
         ];
-    }
-
-    /**
-     * @TODO: Make Migrations loading contain some sort of dependency handling other than module dependency.
-     * @param ContainerInterface $container
-     * @return void
-     * @throws ModuleException
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    public static function setup(ContainerInterface $container): void
-    {
-        /** @var ModuleList $moduleList */
-        $moduleList = $container->get(ModuleList::class);
-        $moduleList->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($container) {
-            if (!is_subclass_of($moduleFqcn, HasMigrationsInterface::class)) {
-                return;
-            }
-            $configuration = $container->get(MigrationConfiguration::class);
-            $migrations = $moduleFqcn::getMigrations();
-            ksort($migrations);
-            foreach ($migrations as $migration) {
-                if (!is_subclass_of($migration, AbstractMigration::class)) {
-                    throw new ModuleException(
-                        'Migrations must extends "' . AbstractMigration::class . '", ' .
-                        '"' . $migration . '" does not.'
-                    );
-                }
-                $configuration->addMigrationClass($migration);
-            }
-        });
     }
 }

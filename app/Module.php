@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Database\Entities\TestEntity;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;

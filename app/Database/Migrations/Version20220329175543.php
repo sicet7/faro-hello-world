@@ -1,16 +1,19 @@
 <?php
 
-namespace App\Console\Database\Migrations;
+declare(strict_types=1);
 
-use Doctrine\DBAL\Types\Types;
+namespace App\Database\Migrations;
+
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Migrations\AbstractMigration;
 
-class CreateTestTable extends AbstractMigration
+final class Version20220329175543 extends AbstractMigration
 {
     /**
      * @param Schema $schema
      * @return void
+     * @throws \Doctrine\DBAL\Schema\SchemaException
      */
     public function up(Schema $schema): void
     {
@@ -25,6 +28,7 @@ class CreateTestTable extends AbstractMigration
     /**
      * @param Schema $schema
      * @return void
+     * @throws \Doctrine\DBAL\Schema\SchemaException
      */
     public function down(Schema $schema): void
     {

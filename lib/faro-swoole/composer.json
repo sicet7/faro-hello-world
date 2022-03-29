@@ -24,6 +24,9 @@
             "module.php"
         ]
     },
+    "suggest": {
+        "ext-openswoole": "*"
+    },
     "license": "MIT",
     "authors": [
         {

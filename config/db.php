@@ -18,4 +18,7 @@ return [
             'namespace' => 'Proxies\\',
         ],
     ],
+    'migrations' => [
+        'App\\Database\\Migrations' => dirname(__DIR__) . '/app/Database/Migrations',
+    ],
 ];

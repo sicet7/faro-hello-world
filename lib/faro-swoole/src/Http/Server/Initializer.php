@@ -61,7 +61,7 @@ class Initializer
         if ($config->has(self::CONFIG_KEY)) {
             $configArray = $config->get(self::CONFIG_KEY);
             $configArray['daemonize'] = 0;
-            // TODO: Find a way of supporting daemonized servers in the future.
+            // TODO: Find a nice way of supporting daemonized servers in the future.
         }
         if ($this->server === null) {
             throw new SwooleException('Server not yet initialized!');
