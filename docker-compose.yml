@@ -1,11 +1,17 @@
 version: "3.8"
 
 services:
-    db:
+    app:
+        build:
+            context: .
+        ports:
+            - 8000:8000
+
+    sql:
         image: postgres
         restart: unless-stopped
-        ports:
-            - 5432:5432
+#        ports:
+#            - 5432:5432
         environment:
             POSTGRES_USER: testUser
             POSTGRES_PASSWORD: testPassword
@@ -14,8 +20,8 @@ services:
         image: adminer
         restart: unless-stopped
         links:
-            - db
+            - sql
         depends_on:
-            - db
+            - sql
         ports:
             - 8080:8080

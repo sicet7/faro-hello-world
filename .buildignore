@@ -1,0 +1,35 @@
+# Ignore all ".github" folders in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.github\/.*$/
+
+# Ignore all "tests" folders in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/tests\/.*$/
+
+# Ignore all "test" folders in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/test\/.*$/
+
+# Ignore all ".travis.yml" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.travis\.yml$/
+
+# Ignore all "phpunit.xml" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/phpunit\.xml$/
+
+# Ignore all ".phpcs.xml.dist" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.phpcs\.xml\.dist$/
+
+# Ignore all "phpcs.xml.dist" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/phpcs\.xml\.dist$/
+
+# Ignore all "phpstan.*" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/phpstan\.[^\/]+$/
+
+# Ignore all ".gitignore" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.gitignore$/
+
+# Ignore all ".gitattributes" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.gitattributes$/
+
+# Ignore all ".editorconfig" files in vendor packages
+/^vendor\/[^\/]+\/[^\/]+\/\.editorconfig$/
+
+# Ignore all *.md files
+/^.*\.md$/

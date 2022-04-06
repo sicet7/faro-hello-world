@@ -6,3 +6,4 @@ var/log
 var/tmp
 swoole.pid
 public
+*.phar

@@ -92,6 +92,18 @@ class ErrorManager
     }
 
     /**
+     * @return string|null
+     */
+    protected function getIncludeRoot(): ?string
+    {
+        try {
+            return $this->getConfig()->get('dir.include');
+        } catch (ConfigException $configException) {
+            return null;
+        }
+    }
+
+    /**
      * @return bool
      */
     protected function isFlagSet(): bool
@@ -151,7 +163,7 @@ class ErrorManager
      */
     public function displayError(int $code): void
     {
-        $appRoot = $this->getAppRoot();
+        $appRoot = $this->getIncludeRoot();
         if ($appRoot === null) {
             return;
         }
