@@ -20,7 +20,7 @@ class StartCommand extends Command
     /**
      * @var Initializer
      */
-    private Initializer $serverHandler;
+    private Initializer $initializer;
 
     /**
      * @var Config
@@ -29,17 +29,17 @@ class StartCommand extends Command
 
     /**
      * StartCommand constructor.
-     * @param Initializer $serverHandler
+     * @param Initializer $initializer
      * @param Config $config
      * @param string|null $name
      */
     public function __construct(
-        Initializer $serverHandler,
+        Initializer $initializer,
         Config $config,
         string $name = null
     ) {
         parent::__construct($name);
-        $this->serverHandler = $serverHandler;
+        $this->initializer = $initializer;
         $this->config = $config;
     }
 
@@ -79,13 +79,13 @@ class StartCommand extends Command
             $ip = $this->getIp($ipAndPort);
             $port = $this->getPort($ipAndPort);
         }
-        $this->serverHandler->init(
+        $this->initializer->init(
             $ip,
             $port,
             ($this->config->has('server.ssl.enabled') ? $this->config->get('server.ssl.enabled') : false)
         );
-        $this->serverHandler->configure($this->config);
-        $this->serverHandler->start();
+        $this->initializer->configure($this->config);
+        $this->initializer->start();
         return 0;
     }
 

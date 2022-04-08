@@ -3,10 +3,11 @@
 namespace Sicet7\Faro\Swoole;
 
 use DI\FactoryInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Console\Interfaces\HasCommandsInterface;
 use Sicet7\Faro\Core\BaseModule;
-use Sicet7\Faro\Swoole\Commands\StartCommand;
+use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\Swoole\Http\Server\Initializer;
 use Sicet7\Faro\Swoole\Http\Server\Runner;
 use Sicet7\Faro\Swoole\Http\Server\RunnerInterface;
@@ -24,7 +25,8 @@ class Module extends BaseModule implements HasCommandsInterface, HasConfigInterf
         return [
             Initializer::class => create(Initializer::class)
                 ->constructor(get(FactoryInterface::class)),
-            RunnerInterface::class => create(Runner::class),
+            RunnerInterface::class => create(Runner::class)
+                ->constructor(get(EventDispatcherInterface::class)),
         ];
     }
 
@@ -44,9 +46,10 @@ class Module extends BaseModule implements HasCommandsInterface, HasConfigInterf
      */
     public static function getCommands(): array
     {
-        return [
-            StartCommand::class,
-        ];
+        return PSR4::getFQCNs(
+            'Sicet7\\Faro\\Swoole\\Commands',
+            __DIR__ . '/Commands'
+        );
     }
 
     /**

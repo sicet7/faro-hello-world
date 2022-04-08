@@ -9,11 +9,12 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Swoole\Events\ServerStopEvent;
+use Sicet7\Faro\Swoole\Events\ServerStartEvent;
 use Sicet7\Faro\Swoole\Http\ErrorManager;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
@@ -21,8 +22,6 @@ use Sicet7\Faro\Swoole\Http\ServerRequestBuilderInterface;
 use Sicet7\Faro\Swoole\Module;
 use Sicet7\Faro\Web\ModuleContainer;
 use Sicet7\Faro\Web\RequestEvent;
-use Ilex\SwoolePsr7\SwooleServerRequestConverter;
-use Ilex\SwoolePsr7\SwooleResponseConverter;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -30,9 +29,30 @@ use Swoole\Http\Server;
 class Runner implements RunnerInterface
 {
     /**
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
+
+    /**
      * @var ContainerInterface|null
      */
     private ?ContainerInterface $container = null;
+
+    /**
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function __construct(EventDispatcherInterface $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * @return EventDispatcherInterface
+     */
+    public function getConsoleDispatcher(): EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
 
     /**
      * @param Server $server
@@ -40,7 +60,7 @@ class Runner implements RunnerInterface
      */
     public function onStart(Server $server): void
     {
-        echo 'Server started listening on: ' . $server->host . ':' . $server->port . PHP_EOL;
+        $this->getConsoleDispatcher()->dispatch(new ServerStartEvent($server));
     }
 
     /**
@@ -49,7 +69,7 @@ class Runner implements RunnerInterface
      */
     public function onShutdown(Server $server): void
     {
-        echo 'Server is shutting down.' . PHP_EOL;
+        $this->getConsoleDispatcher()->dispatch(new ServerStopEvent($server));
     }
 
     /**

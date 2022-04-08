@@ -63,7 +63,7 @@ class Initializer
             $configArray['daemonize'] = 0;
             // TODO: Find a nice way of supporting daemonized servers in the future.
         }
-        if ($this->server === null) {
+        if ($this->getServer() === null) {
             throw new SwooleException('Server not yet initialized!');
         }
         if (isset($configArray['log_file']) && !file_exists($configArray['log_file'])) {
@@ -72,7 +72,7 @@ class Initializer
         if (isset($configArray['document_root']) && !file_exists($configArray['document_root'])) {
             mkdir($configArray['document_root'], 0755, true);
         }
-        $this->server->set($configArray);
+        $this->getServer()->set($configArray);
     }
 
     /**
@@ -81,14 +81,30 @@ class Initializer
      */
     public function start(): void
     {
-        if ($this->server === null) {
+        if ($this->getServer() === null) {
             throw new SwooleException('Server not yet initialized!');
         }
-        $this->server->on('Start', [$this->runner, 'onStart']);
-        $this->server->on('Shutdown', [$this->runner, 'onShutdown']);
-        $this->server->on('WorkerStart', [$this->runner, 'onWorkerStart']);
-        $this->server->on('Request', [$this->runner, 'onRequest']);
-        $this->server->on('WorkerStop', [$this->runner, 'onWorkerStop']);
-        $this->server->start();
+        $this->getServer()->on('Start', [$this->getRunner(), 'onStart']);
+        $this->getServer()->on('Shutdown', [$this->getRunner(), 'onShutdown']);
+        $this->getServer()->on('WorkerStart', [$this->getRunner(), 'onWorkerStart']);
+        $this->getServer()->on('Request', [$this->getRunner(), 'onRequest']);
+        $this->getServer()->on('WorkerStop', [$this->getRunner(), 'onWorkerStop']);
+        $this->getServer()->start();
+    }
+
+    /**
+     * @return Server|null
+     */
+    public function getServer(): ?Server
+    {
+        return $this->server;
+    }
+
+    /**
+     * @return RunnerInterface|null
+     */
+    public function getRunner(): ?RunnerInterface
+    {
+        return $this->runner;
     }
 }

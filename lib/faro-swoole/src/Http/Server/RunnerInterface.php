@@ -2,12 +2,18 @@
 
 namespace Sicet7\Faro\Swoole\Http\Server;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
 
 interface RunnerInterface
 {
+    /**
+     * @return EventDispatcherInterface
+     */
+    public function getConsoleDispatcher(): EventDispatcherInterface;
+
     /**
      * @param Server $server
      * @return void
