@@ -1,0 +1,10 @@
+docker-compose.yml
+Dockerfile
+phpcs.xml
+swoole.pid
+var/
+.editorconfig
+.gitignore
+vendor/
+public/
+faro
