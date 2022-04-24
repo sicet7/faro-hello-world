@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ObjectRepository;
 
-interface EntityRepositoryInterface extends ObjectRepository, Selectable
+interface EntityRepositoryInterface
 {
     /**
      * @return EntityManagerInterface

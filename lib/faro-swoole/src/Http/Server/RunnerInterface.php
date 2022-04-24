@@ -16,18 +16,6 @@ interface RunnerInterface
 
     /**
      * @param Server $server
-     * @return void
-     */
-    public function onStart(Server $server): void;
-
-    /**
-     * @param Server $server
-     * @return void
-     */
-    public function onShutdown(Server $server): void;
-
-    /**
-     * @param Server $server
      * @param int $workerId
      * @return void
      */

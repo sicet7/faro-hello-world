@@ -3,6 +3,7 @@
 namespace Sicet7\Faro\Swoole\Http;
 
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Exceptions\ConfigException;
 use Sicet7\Faro\Swoole\Http\Server\WorkerState;
@@ -84,23 +85,7 @@ class ErrorManager
      */
     protected function getAppRoot(): ?string
     {
-        try {
-            return $this->getConfig()->get('dir.root');
-        } catch (ConfigException $configException) {
-            return null;
-        }
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function getIncludeRoot(): ?string
-    {
-        try {
-            return $this->getConfig()->get('dir.include');
-        } catch (ConfigException $configException) {
-            return null;
-        }
+        return $this->getConfig()->find('dir.root');
     }
 
     /**
@@ -121,10 +106,10 @@ class ErrorManager
     protected function isIpWhitelisted(): bool
     {
         try {
+            // TODO: handles proxy requests?.
             $config = $this->getConfig();
             $request = $this->getWorkerState()->getRequest();
-            return $config->has('maintenance.whitelist.ips') &&
-                in_array($request->server['remote_addr'], $config->get('maintenance.whitelist.ips'));
+            return in_array($request->server['remote_addr'], $config->find('maintenance.whitelist.ips', []));
         } catch (ConfigException $configException) {
             return false;
         }
@@ -138,10 +123,10 @@ class ErrorManager
         try {
             $config = $this->getConfig();
             $request = $this->getWorkerState()->getRequest();
-            if (!$config->has('maintenance.whitelist.cookies')) {
+            $whitelistCookies = $config->find('maintenance.whitelist.cookies', []);
+            if (empty($whitelistCookies)) {
                 return false;
             }
-            $whitelistCookies = $config->get('maintenance.whitelist.cookies');
             $cookies = $request->cookie;
             foreach ($cookies as $cookieName => $cookieValue) {
                 if (
@@ -163,13 +148,12 @@ class ErrorManager
      */
     public function displayError(int $code): void
     {
-        $appRoot = $this->getIncludeRoot();
-        if ($appRoot === null) {
+        if ($this->getAppRoot() === null) {
             return;
         }
-        $errorFile = $appRoot . '/errors/' . $code . '.html';
-        $retryTime = ($this->getConfig()->has('maintenance.retry_interval') ?
-            $this->getConfig()->get('maintenance.retry_interval') : 3600);
+        $errorDir = $this->getConfig()->find('maintenance.error_dir', $this->getAppRoot() . '/errors');
+        $errorFile = rtrim($errorDir, " \t\n\r\0\x0B/") . '/' . $code . '.html';
+        $retryTime = $this->getConfig()->find('maintenance.retry_interval', 3600);
         $this->getWorkerState()->getResponse()->setHeader('Retry-After', $retryTime);
         $this->getWorkerState()->getResponse()->setStatusCode($code, self::ERRORS[$code]);
         if (file_exists($errorFile) && ($content = file_get_contents($errorFile)) !== false) {
@@ -184,21 +168,16 @@ class ErrorManager
      */
     public function inMaintenance(): bool
     {
-        try {
-            if (!$this->isFlagSet()) {
-                return false;
-            }
-            if ($this->isIpWhitelisted()) {
-                return false;
-            }
-            if ($this->hasWhitelistCookie()) {
-                return false;
-            }
-            $this->displayError(503);
-            return true;
-        } catch (ConfigException $configException) {
-            $this->displayError(503);
-            return true;
+        if (!$this->isFlagSet()) {
+            return false;
         }
+        if ($this->isIpWhitelisted()) {
+            return false;
+        }
+        if ($this->hasWhitelistCookie()) {
+            return false;
+        }
+        $this->displayError(503);
+        return true;
     }
 }

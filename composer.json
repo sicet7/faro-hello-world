@@ -16,10 +16,10 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "Server\\Modules\\": "srv/Modules/"
         },
         "files": [
-            "modules.php"
+            "srv/modules.php"
         ]
     },
     "scripts": {

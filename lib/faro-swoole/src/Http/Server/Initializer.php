@@ -57,12 +57,9 @@ class Initializer
      */
     public function configure(Config $config): void
     {
-        $configArray = [];
-        if ($config->has(self::CONFIG_KEY)) {
-            $configArray = $config->get(self::CONFIG_KEY);
-            $configArray['daemonize'] = 0;
-            // TODO: Find a nice way of supporting daemonized servers in the future.
-        }
+        $configArray = $config->find(self::CONFIG_KEY, []);
+        $configArray['daemonize'] = 0;
+        // TODO: Find a nice way of supporting daemonized servers in the future.
         if ($this->getServer() === null) {
             throw new SwooleException('Server not yet initialized!');
         }
@@ -84,11 +81,39 @@ class Initializer
         if ($this->getServer() === null) {
             throw new SwooleException('Server not yet initialized!');
         }
-        $this->getServer()->on('Start', [$this->getRunner(), 'onStart']);
-        $this->getServer()->on('Shutdown', [$this->getRunner(), 'onShutdown']);
-        $this->getServer()->on('WorkerStart', [$this->getRunner(), 'onWorkerStart']);
-        $this->getServer()->on('Request', [$this->getRunner(), 'onRequest']);
-        $this->getServer()->on('WorkerStop', [$this->getRunner(), 'onWorkerStop']);
+
+        //Server
+        $this->mountEvent('Start', true);
+        $this->mountEvent('Shutdown', true);
+        $this->mountEvent('ManagerStart', true);
+        $this->mountEvent('ManagerStop', true);
+
+        //HTTP
+        $this->mountEvent('Request');
+
+        //Worker
+        $this->mountEvent('WorkerStart');
+        $this->mountEvent('WorkerStop');
+        $this->mountEvent('WorkerExit', true);
+        $this->mountEvent('WorkerError', true);
+        $this->mountEvent('BeforeReload', true);
+        $this->mountEvent('AfterReload', true);
+
+        //Tasks
+        $this->mountEvent('Task', true);
+        $this->mountEvent('Finish', true);
+
+        //Messaging
+        $this->mountEvent('PipeMessage', true);
+
+        //TCP
+        $this->mountEvent('Connect', true);
+        $this->mountEvent('Receive', true);
+        $this->mountEvent('Close', true);
+
+        //UDP
+        $this->mountEvent('Packet', true);
+
         $this->getServer()->start();
     }
 
@@ -106,5 +131,24 @@ class Initializer
     public function getRunner(): ?RunnerInterface
     {
         return $this->runner;
+    }
+
+    /**
+     * @param string $eventName
+     * @param bool $optional
+     * @return void
+     * @throws SwooleException
+     */
+    protected function mountEvent(string $eventName, bool $optional = false): void
+    {
+        $methodName = 'on' . ucfirst($eventName);
+        $exists = method_exists($this->getRunner(), $methodName);
+        if (!$exists && !$optional) {
+            throw new SwooleException('Runner is missing: "' . $methodName . '" method.');
+        }
+        if (!$exists) {
+            return;
+        }
+        $this->getServer()->on($eventName, [$this->getRunner(), $methodName]);
     }
 }

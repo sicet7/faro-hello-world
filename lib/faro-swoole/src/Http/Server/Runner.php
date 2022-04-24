@@ -83,8 +83,8 @@ class Runner implements RunnerInterface
         $this->makeContainer([
             WorkerState::class => new WorkerState($workerId, $server),
         ]);
-        $this->getContainer()->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
         $this->getContainer()->get(ErrorHandler::class)->bootMessage();
+        $this->getContainer()->get(EventDispatcherInterface::class)->dispatch(new WorkerStart($server, $workerId));
     }
 
     /**
@@ -110,9 +110,7 @@ class Runner implements RunnerInterface
         }
         try {
             $config = $this->getContainer()->get(Config::class);
-            if ($config->has('app.name')) {
-                $this->getWorkerState()->getResponse()->setHeader('Server', $config->get('app.name'));
-            }
+            $this->getWorkerState()->getResponse()->setHeader('Server', $config->find('app.name', 'Unnamed app.'));
             if ($errorManager->inMaintenance()) {
                 return;
             }

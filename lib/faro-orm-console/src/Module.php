@@ -79,9 +79,7 @@ class Module extends BaseModule implements
         return [
             TableMetadataStorageConfiguration::class => function (Config $config) {
                 $instance = new TableMetadataStorageConfiguration();
-                $instance->setTableName(
-                    ($config->has('db.migrations.table') ? $config->get('db.migrations.table') : 'migrations')
-                );
+                $instance->setTableName($config->find('db.migrations.table', 'migrations'));
                 return $instance;
             },
             MetadataStorageConfiguration::class => get(TableMetadataStorageConfiguration::class),
@@ -94,14 +92,8 @@ class Module extends BaseModule implements
                     MigrationConfiguration::VERSIONS_ORGANIZATION_NONE
                 );
                 $migrationConfiguration->setMetadataStorageConfiguration($metadataStorageConfiguration);
-                if (
-                    $config->has('db.migrations') &&
-                    !empty($config->get('db.migrations')) &&
-                    is_array($config->get('db.migrations'))
-                ) {
-                    foreach ($config->get('db.migrations') as $namespace => $path) {
-                        $migrationConfiguration->addMigrationsDirectory($namespace, $path);
-                    }
+                foreach ($config->find('db.migrations', []) as $namespace => $path) {
+                    $migrationConfiguration->addMigrationsDirectory($namespace, $path);
                 }
                 return $migrationConfiguration;
             },

@@ -14,11 +14,11 @@ return [
     ],
     'orm' => [
         'proxyClasses' => [
-            'dir' => concat(val('dir.include'), '/proxies'),
+            'dir' => concat(val('dir.root'), '/proxies'),
             'namespace' => 'Proxies\\',
         ],
     ],
     'migrations' => [
-        'App\\Database\\Migrations' => concat(val('dir.include'), '/app/Database/Migrations'),
+        'App\\Database\\Migrations' => concat(val('dir.root'), '/app/Database/Migrations'),
     ],
 ];

@@ -5,8 +5,8 @@ _term() {
     kill -TERM "$child" 2>/dev/null
 }
 
-trap _term SIGTERM
+trap _term TERM
 
-php /var/www/faro.phar swoole:server:start 0.0.0.0:8080 &
+php /var/www/faro swoole:server:start 0.0.0.0:8080 &
 child=$!
 wait "$child"

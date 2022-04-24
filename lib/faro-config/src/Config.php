@@ -36,8 +36,22 @@ class Config implements ContainerInterface
 
     /**
      * @param string $id
+     * @param mixed|null $default
      * @return mixed
-     * @throws ConfigException|ConfigNotFoundException
+     */
+    public function find(string $id, mixed $default = null): mixed
+    {
+        try {
+            return $this->get($id);
+        } catch (ConfigNotFoundException $configNotFoundException) {
+            return $default;
+        }
+    }
+
+    /**
+     * @param string $id
+     * @return mixed
+     * @throws ConfigNotFoundException
      */
     public function get(string $id): mixed
     {
@@ -53,25 +67,16 @@ class Config implements ContainerInterface
      */
     public function has(string $id): bool
     {
-        try {
-            return array_key_exists($this->parseId($id), $this->config);
-        } catch (\Exception) {
-            return false;
-        }
+        return array_key_exists($this->parseId($id), $this->config);
     }
 
     /**
      * @param string $id
      * @return string
-     * @throws ConfigException
      */
     protected function parseId(string $id): string
     {
-        if (!is_string($id)) {
-            throw new ConfigException('Config Id must be a string');
-        }
-        $id = trim($id, static::TRIM);
-        return strtr($id, static::DELIMITER . static::DELIMITER, static::DELIMITER);
+        return strtr(trim($id, static::TRIM), static::DELIMITER . static::DELIMITER, static::DELIMITER);
     }
 
     /**

@@ -68,18 +68,14 @@ class Module extends BaseModule implements BeforeBuildInterface
                 $dbConfig->setProxyDir($config->get('db.orm.proxyClasses.dir'));
                 $dbConfig->setProxyNamespace($config->get('db.orm.proxyClasses.namespace'));
                 $dbConfig->setRepositoryFactory($repositoryFactory);
-                if ($config->has('db.orm.cache.metadata')) {
-                    $dbConfig->setMetadataCache(
-                        $container->get(
-                            $config->get('db.orm.cache.metadata')
-                        )
-                    );
+                $metadataCache = $config->find('db.orm.cache.metadata');
+                if (is_string($metadataCache) && !empty($metadataCache)) {
+                    $dbConfig->setMetadataCache($container->get($metadataCache));
                 }
-                if ($config->has('db.orm.cache.query')) {
+                $queryCache = $config->find('db.orm.cache.query');
+                if (is_string($queryCache) && !empty($queryCache)) {
                     $dbConfig->setQueryCache(
-                        $container->get(
-                            $config->get('db.orm.cache.query')
-                        )
+                        $container->get($queryCache)
                     );
                 }
                 return $dbConfig;

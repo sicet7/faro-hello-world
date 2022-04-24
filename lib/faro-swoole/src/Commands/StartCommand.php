@@ -65,12 +65,8 @@ class StartCommand extends Command
         InputInterface $input,
         OutputInterface $output
     ): int {
-        $ip = null;
-        $port = null;
-        if ($this->config->has('server.ip') && $this->config->has('server.port')) {
-            $ip = $this->config->get('server.ip');
-            $port = $this->config->get('server.port');
-        }
+        $ip = $this->config->find('server.ip');
+        $port = $this->config->find('server.port');
         if ($ip === null || $port === null) {
             $ipAndPort = $input->getArgument('ip_and_port');
             if (!$this->validateIpAndPort($ipAndPort)) {
@@ -82,7 +78,7 @@ class StartCommand extends Command
         $this->initializer->init(
             $ip,
             $port,
-            ($this->config->has('server.ssl.enabled') ? $this->config->get('server.ssl.enabled') : false)
+            $this->config->find('server.ssl.enabled', false)
         );
         $this->initializer->configure($this->config);
         $this->initializer->start();

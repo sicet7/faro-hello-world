@@ -1,9 +1,9 @@
 /faro
 vendor/
-proxies/
 .idea/
 var/log
 var/tmp
-swoole.pid
+srv/swoole.pid
 public
-*.phar
+srv/database/Proxies/*
+!srv/database/Proxies/.gitkeep

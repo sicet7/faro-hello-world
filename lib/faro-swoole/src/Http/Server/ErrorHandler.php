@@ -29,8 +29,6 @@ class ErrorHandler extends \Monolog\ErrorHandler
      * @param WorkerState $state
      * @param Config $config
      * @return static
-     * @throws ConfigException
-     * @throws ConfigNotFoundException
      */
     public static function create(
         LoggerInterface $logger,
@@ -39,13 +37,12 @@ class ErrorHandler extends \Monolog\ErrorHandler
     ): static {
         $handler = new static($logger);
         $handler->setWorkerState($state);
-        $levelMap = ($config->has(self::LEVEL_MAP_KEY) ? $config->get(self::LEVEL_MAP_KEY) : []);
-        $fetalResMemSize = ($config->has(self::FETAL_RES_MEM_SIZE_KEY) ?
-            $config->get(self::FETAL_RES_MEM_SIZE_KEY) : 20);
-        $fetalLogLevel = ($config->has(self::FETAL_LOG_LEVEL_KEY) ? $config->get(self::FETAL_LOG_LEVEL_KEY) : null);
+        $levelMap = $config->find(self::LEVEL_MAP_KEY, []);
+        $fetalResMemSize = $config->find(self::FETAL_RES_MEM_SIZE_KEY, 20);
+        $fetalLogLevel = $config->find(self::FETAL_LOG_LEVEL_KEY);
         $handler->registerErrorHandler(
             $levelMap,
-            !str_contains($config->get('app.env'), 'prod'),
+            !str_contains($config->find('app.env', 'production'), 'prod'),
             -1,
             false
         );

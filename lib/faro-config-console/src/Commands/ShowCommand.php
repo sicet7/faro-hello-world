@@ -64,7 +64,7 @@ class ShowCommand extends Command
         if (empty($path)) {
             $dumper->dump($cloner->cloneVar($this->config->getConfig()));
         } else {
-            $dumper->dump($cloner->cloneVar($this->config->get($path)));
+            $dumper->dump($cloner->cloneVar($this->config->find($path)));
         }
 
         return static::SUCCESS;

@@ -10,7 +10,7 @@
         "php": ">=8.0",
         "sicet7/faro-core": "*",
         "sicet7/faro-event": "*",
-        "symfony/console": "^5.3",
+        "symfony/console": "^6.0",
         "symfony/event-dispatcher-contracts": "^2.4"
     },
     "autoload": {
