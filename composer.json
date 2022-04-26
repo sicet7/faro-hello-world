@@ -16,7 +16,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Server\\Modules\\": "srv/Modules/"
+            "Server\\Modules\\": "srv/modules/",
+            "Server\\App\\": "srv/app/"
         },
         "files": [
             "srv/modules.php"

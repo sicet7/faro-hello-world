@@ -1,10 +1,11 @@
 <?php
 
-namespace Server\Modules\DatabasePrepare;
+namespace Server\App\Console\Services;
 
 use Sicet7\Faro\Config\Config;
+use Symfony\Component\Finder\Finder;
 
-class HasMigrationsCheck
+class MigrationsService
 {
     /**
      * @var Config
@@ -27,12 +28,16 @@ class HasMigrationsCheck
     /**
      * @return bool
      */
-    public function execute(): bool
+    public function hasMigrations(): bool
     {
         if ($this->value === null) {
             $this->value = false;
             foreach ($this->config->find('db.migrations', []) as $namespace => $directory) {
-                if (file_exists($directory) && (new \FilesystemIterator($directory))->valid()) {
+                if (
+                    file_exists($directory) &&
+                    (new \FilesystemIterator($directory))->valid() &&
+                    Finder::create()->files()->in($directory)->name('*.php')->count() > 0
+                ) {
                     $this->value = true;
                     break;
                 }

@@ -7,7 +7,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\BaseModule;
-use Sicet7\Faro\Swoole\Http\ErrorManager;
+use Sicet7\Faro\Swoole\Http\MaintenanceManager;
 use Sicet7\Faro\Swoole\Http\Server\ErrorHandler;
 use Sicet7\Faro\Swoole\Http\Server\ResponseEmitter;
 use Sicet7\Faro\Swoole\Http\Server\ResponseEmitterInterface;
@@ -34,8 +34,8 @@ class WebModule extends BaseModule
             ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state, Config $config) {
                 return ErrorHandler::create($logger, $state, $config);
             },
-            ErrorManager::class => create(ErrorManager::class)
-                ->constructor(get(ContainerInterface::class)),
+            MaintenanceManager::class => create(MaintenanceManager::class)
+                ->constructor(get(Config::class), get(WorkerState::class)),
         ];
     }
 }

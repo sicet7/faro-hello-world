@@ -38,7 +38,7 @@ return [
 
     // logging
     'log_level' => 1,
-    'log_file' => concat(val('dir.root'), '/var/log/swoole.log'),
+    'log_file' => concat(val('dir.log'), '/swoole.log'),
     'log_rotation' => SWOOLE_LOG_ROTATION_DAILY | SWOOLE_LOG_ROTATION_SINGLE,
     'log_date_format' => '%Y-%m-%dT%H:%M:%S%z',# ISO-8601
     'log_date_with_microseconds' => false,
@@ -80,7 +80,7 @@ return [
 
     'http_parse_post' => true,
     'http_parse_cookie' => true,
-    'upload_tmp_dir' => concat(val('dir.root'), '/var/tmp/upload'),
+    'upload_tmp_dir' => concat(val('dir.var'), '/tmp/upload'),
 
     // compression
     'http_compression' => true,

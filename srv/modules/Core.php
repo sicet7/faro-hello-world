@@ -1,21 +1,21 @@
 <?php
 
-namespace Server\Modules\Core;
+namespace Server\Modules;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Server\App\Core\Services\EnvironmentService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
 use Sicet7\Faro\Core\BaseModule;
-
 use function DI\create;
 use function DI\get;
 
-class CoreModule extends BaseModule implements HasConfigInterface
+class Core extends BaseModule implements HasConfigInterface
 {
     /**
      * @return array
@@ -23,7 +23,7 @@ class CoreModule extends BaseModule implements HasConfigInterface
     public static function getConfigPaths(): array
     {
         return [
-            dirname(__DIR__, 2) . '/config',
+            dirname(__DIR__) . '/config',
         ];
     }
 
@@ -69,7 +69,7 @@ class CoreModule extends BaseModule implements HasConfigInterface
     public static function getDefinitions(): array
     {
         return [
-            Environment::class => create(Environment::class)
+            EnvironmentService::class => create(EnvironmentService::class)
                 ->constructor(get(Config::class)),
         ];
     }

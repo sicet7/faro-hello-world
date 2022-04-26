@@ -1,9 +1,9 @@
 <?php
 
-namespace Server\Modules\DatabasePrepare\Listeners;
+namespace Server\App\Console\Listeners;
 
-use Server\Modules\Core\Environment;
-use Server\Modules\DatabasePrepare\HasMigrationsCheck;
+use Server\App\Console\Services\MigrationsService;
+use Server\App\Core\Services\EnvironmentService;
 use Sicet7\Faro\Event\Attributes\ListensTo;
 use Sicet7\Faro\Event\Interfaces\ListenerInterface;
 use Sicet7\Faro\Swoole\Commands\StartCommand;
@@ -15,9 +15,9 @@ use Symfony\Component\Console\Input\ArrayInput;
 class ServerStartCommandListener implements ListenerInterface
 {
     /**
-     * @var Environment
+     * @var EnvironmentService
      */
-    private Environment $environment;
+    private EnvironmentService $environment;
 
     /**
      * @var Application
@@ -25,23 +25,23 @@ class ServerStartCommandListener implements ListenerInterface
     private Application $application;
 
     /**
-     * @var HasMigrationsCheck
+     * @var MigrationsService
      */
-    private HasMigrationsCheck $migrationsCheck;
+    private MigrationsService $migrationsService;
 
     /**
-     * @param Environment $environment
+     * @param EnvironmentService $environment
      * @param Application $application
-     * @param HasMigrationsCheck $migrationsCheck
+     * @param MigrationsService $migrationsService
      */
     public function __construct(
-        Environment $environment,
+        EnvironmentService $environment,
         Application $application,
-        HasMigrationsCheck $migrationsCheck
+        MigrationsService $migrationsService
     ) {
         $this->environment = $environment;
         $this->application = $application;
-        $this->migrationsCheck = $migrationsCheck;
+        $this->migrationsService = $migrationsService;
     }
 
     /**
@@ -72,7 +72,7 @@ class ServerStartCommandListener implements ListenerInterface
             }
         }
 
-        if ($this->migrationsCheck->execute()) {
+        if ($this->migrationsService->hasMigrations()) {
             $output->writeln('Running database migrations.');
             $command = $this->application->find('migrations:migrate');
             $returnCode = $command->run(new ArrayInput([

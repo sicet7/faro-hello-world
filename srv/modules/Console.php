@@ -1,18 +1,19 @@
 <?php
 
-namespace Server\Modules\DatabasePrepare;
+namespace Server\Modules;
 
-use Server\Modules\Core\CoreModule;
+use Server\App\Console\Services\MigrationsService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Module as ConfigModule;
 use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
 use Sicet7\Faro\ORM\Console\Module as ORMConsoleModule;
+
 use function DI\create;
 use function DI\get;
 
-class DBPrepareModule extends BaseModule implements HasListenersInterface
+class Console extends BaseModule implements HasListenersInterface
 {
     /**
      * @return string[]
@@ -22,7 +23,6 @@ class DBPrepareModule extends BaseModule implements HasListenersInterface
         return [
             ConfigModule::class,
             ORMConsoleModule::class,
-            CoreModule::class,
         ];
     }
 
@@ -31,7 +31,7 @@ class DBPrepareModule extends BaseModule implements HasListenersInterface
      */
     public static function getListeners(): array
     {
-        return PSR4::getFQCNs(__NAMESPACE__ . '\\Listeners', __DIR__ . '/Listeners');
+        return PSR4::getFQCNs('Server\\App\\Console\\Listeners', dirname(__DIR__) . '/app/Console/Listeners');
     }
 
     /**
@@ -40,7 +40,7 @@ class DBPrepareModule extends BaseModule implements HasListenersInterface
     public static function getDefinitions(): array
     {
         return [
-            HasMigrationsCheck::class => create(HasMigrationsCheck::class)
+            MigrationsService::class => create(MigrationsService::class)
                 ->constructor(get(Config::class)),
         ];
     }

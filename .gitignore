@@ -3,7 +3,5 @@ vendor/
 .idea/
 var/log
 var/tmp
-srv/swoole.pid
+swoole.pid
 public
-srv/database/Proxies/*
-!srv/database/Proxies/.gitkeep

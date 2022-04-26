@@ -15,7 +15,7 @@ use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\Exception\ModuleException;
 use Sicet7\Faro\Swoole\Events\ServerStopEvent;
 use Sicet7\Faro\Swoole\Events\ServerStartEvent;
-use Sicet7\Faro\Swoole\Http\ErrorManager;
+use Sicet7\Faro\Swoole\Http\MaintenanceManager;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStart;
 use Sicet7\Faro\Swoole\Http\Server\Event\WorkerStop;
 use Sicet7\Faro\Swoole\Http\ServerRequestBuilderInterface;
@@ -95,23 +95,24 @@ class Runner implements RunnerInterface
     public function onRequest(Request $request, Response $response): void
     {
         try {
-            $errorManager = $this->getContainer()->get(ErrorManager::class);
+            /** @var MaintenanceManager $maintenanceManager */
+            $maintenanceManager = $this->getContainer()->get(MaintenanceManager::class);
         } catch (ContainerExceptionInterface | NotFoundExceptionInterface $exception) {
-            $response->status(500, 'Internal Server Error');
-            $response->end('ErrorManager: Load failed.');
+            $response->setStatusCode(500, RunnerInterface::ERRORS[500]);
+            $response->end('MaintenanceManager: Load failed.');
             return;
         }
         try {
             $this->updateWorkerState($request, $response);
         } catch (ContainerExceptionInterface | NotFoundExceptionInterface $exception) {
-            $response->status(500, 'Internal Server Error');
+            $response->setStatusCode(500, RunnerInterface::ERRORS[500]);
             $response->end('WorkerState: Update failed.');
             return;
         }
         try {
             $config = $this->getContainer()->get(Config::class);
             $this->getWorkerState()->getResponse()->setHeader('Server', $config->find('app.name', 'Unnamed app.'));
-            if ($errorManager->inMaintenance()) {
+            if ($maintenanceManager->maintenanceCheck()) {
                 return;
             }
             /** @var ServerRequestBuilderInterface $requestBuilder */
@@ -129,7 +130,7 @@ class Runner implements RunnerInterface
                         'swoole_request' => $this->getWorkerState()->getRequest()->server,
                     ]
                 );
-                $errorManager->displayError(501);
+                $this->doError(501);
                 return;
             }
             $responseEmitter->emit($requestEvent->getResponse());
@@ -145,7 +146,8 @@ class Runner implements RunnerInterface
                 ),
                 ['exception' => $e]
             );
-            $errorManager->displayError(500);
+            $response->setStatusCode(500, RunnerInterface::ERRORS[500]);
+            $response->end(RunnerInterface::ERROR_DESC[500]);
         }
     }
 
@@ -218,5 +220,21 @@ class Runner implements RunnerInterface
     protected function unsetContainer(): void
     {
         $this->container = null;
+    }
+
+    /**
+     * @param int $code
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    protected function doError(int $code): void
+    {
+        $this->getWorkerState()
+            ->getResponse()
+            ?->setStatusCode($code, RunnerInterface::ERRORS[$code]);
+        $this->getWorkerState()
+            ->getResponse()
+            ?->end(RunnerInterface::ERROR_DESC[$code]);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Server\Modules\Core;
+namespace Server\App\Core\Services;
 
 use Sicet7\Faro\Config\Config;
 
-class Environment
+class EnvironmentService
 {
     /**
      * @var Config
