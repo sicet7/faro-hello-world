@@ -9,7 +9,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\Factories\GenericFactory;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
+use Sicet7\Faro\Core\Interfaces\GenericFactoryInterface;
 
 use function DI\create;
 use function DI\get;
@@ -102,7 +104,7 @@ class ModuleContainer
                 $moduleList,
                 $moduleFqcn,
                 function (string $moduleFqcn) use (&$definedObjects, $containerBuilder) {
-                    $definitions = $moduleFqcn::getDefinitions();
+                    $definitions = $moduleFqcn::getAllDefinitions();
                     if (!empty($definitions)) {
                         foreach (array_keys($definitions) as $definitionFqcn) {
                             if (!is_string($definitionFqcn)) {
@@ -163,6 +165,8 @@ class ModuleContainer
                 $moduleList,
                 $definedObjects
             ),
+            GenericFactory::class => GenericFactory::getDefaultImplementationFactory(),
+            GenericFactoryInterface::class => get(GenericFactory::class),
         ]);
 
         $container = $containerBuilder->build();

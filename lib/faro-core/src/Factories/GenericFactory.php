@@ -4,9 +4,16 @@ namespace Sicet7\Faro\Core\Factories;
 
 use DI\DependencyException;
 use DI\Factory\RequestedEntry;
+use DI\FactoryInterface;
+use Invoker\ParameterResolver\AssociativeArrayResolver;
+use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
+use Invoker\ParameterResolver\DefaultValueResolver;
 use Invoker\ParameterResolver\ParameterResolver;
+use Invoker\ParameterResolver\ResolverChain;
+use Psr\Container\ContainerInterface;
+use Sicet7\Faro\Core\Interfaces\GenericFactoryInterface;
 
-abstract class GenericFactory
+abstract class GenericFactory implements GenericFactoryInterface
 {
     /**
      * @var ParameterResolver
@@ -85,4 +92,47 @@ abstract class GenericFactory
      * @return array
      */
     abstract protected function getClassWhitelist(): array;
+
+    /**
+     * @return callable
+     */
+    public static function getDefaultImplementationFactory(): callable
+    {
+        return function (ContainerInterface $container, FactoryInterface $factory) {
+            $resolverChain = $factory->make(ResolverChain::class, [
+                'resolvers' => [
+                    0 => $factory->make(AssociativeArrayResolver::class),
+                    1 => $factory->make(TypeHintContainerResolver::class, [
+                        'container' => $container,
+                    ]),
+                    2 => $factory->make(DefaultValueResolver::class),
+                ],
+            ]);
+            return new class ($resolverChain) extends GenericFactory {
+                /**
+                 * @return array
+                 */
+                protected function getProvidedParameters(): array
+                {
+                    return [];
+                }
+
+                /**
+                 * @return array
+                 */
+                protected function getResolvedParameters(): array
+                {
+                    return [];
+                }
+
+                /**
+                 * @return array
+                 */
+                protected function getClassWhitelist(): array
+                {
+                    return [];
+                }
+            };
+        };
+    }
 }

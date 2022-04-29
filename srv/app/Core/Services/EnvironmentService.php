@@ -30,6 +30,14 @@ class EnvironmentService
     /**
      * @return bool
      */
+    public function isStaging(): bool
+    {
+        return str_contains($this->config->find('app.env', 'production'), 'staging');
+    }
+
+    /**
+     * @return bool
+     */
     public function isDevelopment(): bool
     {
         return str_contains($this->config->find('app.env', 'production'), 'dev');

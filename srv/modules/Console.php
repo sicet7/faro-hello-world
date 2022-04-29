@@ -2,14 +2,17 @@
 
 namespace Server\Modules;
 
+use Psr\Container\ContainerInterface;
 use Server\App\Console\Services\MigrationsService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Module as ConfigModule;
 use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\Tools\PSR4;
 use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
+use Sicet7\Faro\Event\Module as EventModule;
 use Sicet7\Faro\ORM\Console\Module as ORMConsoleModule;
 
+use Sicet7\Faro\Swoole\Module as SwooleModule;
 use function DI\create;
 use function DI\get;
 
@@ -23,6 +26,7 @@ class Console extends BaseModule implements HasListenersInterface
         return [
             ConfigModule::class,
             ORMConsoleModule::class,
+            EventModule::class,
         ];
     }
 

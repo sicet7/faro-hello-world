@@ -3,9 +3,72 @@
 namespace Sicet7\Faro\Core;
 
 use Psr\Container\ContainerInterface;
+use Sicet7\Faro\Core\Attributes\Definition;
+use Sicet7\Faro\Core\Tools\PSR4;
 
 class BaseModule
 {
+    /**
+     * @var bool
+     */
+    protected static bool $enableAttributeDefinitions = false;
+
+    /**
+     * @param \ReflectionClass $reflection
+     * @return string|null
+     */
+    final protected static function getClassDirectory(\ReflectionClass $reflection): ?string
+    {
+        return ($fileName = $reflection->getFileName()) === false ?
+            null :
+            basename($fileName);
+    }
+
+    /**
+     * @param \ReflectionClass $reflection
+     * @return string|null
+     */
+    final protected static function getClassNamespace(\ReflectionClass $reflection): ?string
+    {
+        if (!$reflection->inNamespace()) {
+            return null;
+        }
+        return $reflection->getNamespaceName();
+    }
+
+    /**
+     * @return array
+     */
+    final public static function getAllDefinitions(): array
+    {
+        if (!static::$enableAttributeDefinitions) {
+            return static::getDefinitions();
+        }
+        $reflection = new \ReflectionClass(static::class);
+        $directory = static::getClassDirectory($reflection);
+        $namespace = static::getClassNamespace($reflection);
+        if ($directory === null || $namespace === null) {
+            return static::getDefinitions();
+        }
+        unset($reflection);
+        $foundDefinitions = [];
+        $foundClasses = PSR4::getFQCNs($namespace, $directory);
+        foreach ($foundClasses as $class) {
+            if (!class_exists($class)) {
+                continue;
+            }
+            $reflection = new \ReflectionClass($class);
+            $attributeArray = $reflection->getAttributes(Definition::class);
+            if (empty($attributeArray)) {
+                continue;
+            }
+            /** @var Definition $attribute */
+            $attribute = $attributeArray[array_key_first($attributeArray)]->newInstance();
+            $foundDefinitions = array_merge($foundDefinitions, $attribute->getDefinitions($class));
+        }
+        return array_merge($foundDefinitions, static::getDefinitions());
+    }
+
     /**
      * Override this method to define custom definitions in the container.
      *

@@ -28,8 +28,6 @@ class ApplicationFactory implements ApplicationFactoryInterface
      */
     public function create(): App
     {
-        $app = AppFactory::createFromContainer($this->container);
-        $app->addRoutingMiddleware();
-        return $app;
+        return AppFactory::createFromContainer($this->container);
     }
 }

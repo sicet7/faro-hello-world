@@ -11,7 +11,10 @@ use Server\App\Core\Services\EnvironmentService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
+use Sicet7\Faro\Config\Module as ConfigModule;
 use Sicet7\Faro\Core\BaseModule;
+use Sicet7\Faro\Log\Module as LogModule;
+
 use function DI\create;
 use function DI\get;
 
@@ -33,8 +36,8 @@ class Core extends BaseModule implements HasConfigInterface
     public static function getDependencies(): array
     {
         return [
-            \Sicet7\Faro\Config\Module::class,
-            \Sicet7\Faro\Log\Module::class,
+            ConfigModule::class,
+            LogModule::class,
         ];
     }
 

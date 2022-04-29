@@ -26,6 +26,10 @@ class ValueDefinition implements VariableDefinitionInterface
      */
     public function resolve(ContainerInterface $container): mixed
     {
-        return $container->get($this->configPath);
+        $value = $container->get($this->configPath);
+        while ($value instanceof VariableDefinitionInterface) {
+            $value = $value->resolve($container);
+        }
+        return $value;
     }
 }
