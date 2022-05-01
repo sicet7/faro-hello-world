@@ -1,13 +1,12 @@
 <?php
 
-namespace Server\Modules;
+namespace Server\App\Core;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Server\App\Core\Services\EnvironmentService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Exceptions\ConfigNotFoundException;
 use Sicet7\Faro\Config\Interfaces\HasConfigInterface;
@@ -15,18 +14,20 @@ use Sicet7\Faro\Config\Module as ConfigModule;
 use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Log\Module as LogModule;
 
-use function DI\create;
-use function DI\get;
-
-class Core extends BaseModule implements HasConfigInterface
+class Module extends BaseModule implements HasConfigInterface
 {
+    /**
+     * @var bool
+     */
+    protected static bool $enableAttributeDefinitions = true;
+
     /**
      * @return array
      */
     public static function getConfigPaths(): array
     {
         return [
-            dirname(__DIR__) . '/config',
+            dirname(__DIR__, 2) . '/config',
         ];
     }
 
@@ -59,21 +60,10 @@ class Core extends BaseModule implements HasConfigInterface
         }
         $monolog->pushHandler(new StreamHandler(
             $logDir . '/system.log',
-            Logger::DEBUG,
+            Logger::WARNING,
             true,
             null,
             true
         ));
-    }
-
-    /**
-     * @return array
-     */
-    public static function getDefinitions(): array
-    {
-        return [
-            EnvironmentService::class => create(EnvironmentService::class)
-                ->constructor(get(Config::class)),
-        ];
     }
 }

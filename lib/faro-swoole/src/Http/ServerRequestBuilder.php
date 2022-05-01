@@ -3,32 +3,31 @@
 namespace Sicet7\Faro\Swoole\Http;
 
 use Ilex\SwoolePsr7\SwooleServerRequestConverter;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\ServerRequestInterface;
 use Sicet7\Faro\Swoole\Http\Server\WorkerState;
 
 class ServerRequestBuilder implements ServerRequestBuilderInterface
 {
     /**
-     * @var Psr17Factory
-     */
-    private Psr17Factory $psr17Factory;
-
-    /**
      * @var WorkerState
      */
     private WorkerState $workerState;
 
     /**
-     * @param Psr17Factory $psr17Factory
+     * @var SwooleServerRequestConverter
+     */
+    private SwooleServerRequestConverter $swooleServerRequestConverter;
+
+    /**
      * @param WorkerState $workerState
+     * @param SwooleServerRequestConverter $swooleServerRequestConverter
      */
     public function __construct(
-        Psr17Factory $psr17Factory,
-        WorkerState $workerState
+        WorkerState $workerState,
+        SwooleServerRequestConverter $swooleServerRequestConverter
     ) {
-        $this->psr17Factory = $psr17Factory;
         $this->workerState = $workerState;
+        $this->swooleServerRequestConverter = $swooleServerRequestConverter;
     }
 
     /**
@@ -36,11 +35,6 @@ class ServerRequestBuilder implements ServerRequestBuilderInterface
      */
     public function build(): ServerRequestInterface
     {
-        return (new SwooleServerRequestConverter(
-            $this->psr17Factory,
-            $this->psr17Factory,
-            $this->psr17Factory,
-            $this->psr17Factory
-        ))->createFromSwoole($this->workerState->getRequest());
+        return $this->swooleServerRequestConverter->createFromSwoole($this->workerState->getRequest());
     }
 }

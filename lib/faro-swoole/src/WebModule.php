@@ -2,8 +2,11 @@
 
 namespace Sicet7\Faro\Swoole;
 
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Psr\Container\ContainerInterface;
+use Ilex\SwoolePsr7\SwooleServerRequestConverter;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\BaseModule;
@@ -26,11 +29,20 @@ class WebModule extends BaseModule
     public static function getDefinitions(): array
     {
         return [
+            SwooleServerRequestConverter::class => create(SwooleServerRequestConverter::class)
+                ->constructor(
+                    get(ServerRequestFactoryInterface::class),
+                    get(UriFactoryInterface::class),
+                    get(UploadedFileFactoryInterface::class),
+                    get(StreamFactoryInterface::class)
+                ),
             ResponseEmitterInterface::class => create(ResponseEmitter::class)
                 ->constructor(get(WorkerState::class)),
             ServerRequestBuilderInterface::class => create(ServerRequestBuilder::class)
-                ->constructor(get(Psr17Factory::class), get(WorkerState::class)),
-            Psr17Factory::class => create(Psr17Factory::class),
+                ->constructor(
+                    get(WorkerState::class),
+                    get(SwooleServerRequestConverter::class)
+                ),
             ErrorHandler::class => function (LoggerInterface $logger, WorkerState $state, Config $config) {
                 return ErrorHandler::create($logger, $state, $config);
             },

@@ -3,7 +3,9 @@
 namespace Server\App\Core\Services;
 
 use Sicet7\Faro\Config\Config;
+use Sicet7\Faro\Core\Attributes\Definition;
 
+#[Definition]
 class EnvironmentService
 {
     /**

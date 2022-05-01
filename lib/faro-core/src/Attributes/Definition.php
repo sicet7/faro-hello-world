@@ -51,20 +51,14 @@ class Definition
      */
     public function getDefinitions(string $foundOnFQCN): array
     {
-        $output = [];
-        $definer = null;
+        $output = [
+            $foundOnFQCN => $this->getFactory(),
+        ];
         if (empty($this->definitionNames)) {
-            return [
-                $foundOnFQCN => $this->getFactory(),
-            ];
+            return $output;
         }
         foreach ($this->definitionNames as $name) {
-            if ($definer === null) {
-                $definer = $name;
-                $output[$name] = $this->getFactory();
-            } else {
-                $output[$name] = get($definer);
-            }
+            $output[$name] = get($foundOnFQCN);
         }
         return $output;
     }

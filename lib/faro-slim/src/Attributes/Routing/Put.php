@@ -10,14 +10,12 @@ class Put extends Route
     /**
      * Put constructor.
      * @param string $pattern
-     * @param array $middlewares
      * @param string|null $groupFqcn
      */
     public function __construct(
         string $pattern,
-        array $middlewares = [],
         ?string $groupFqcn = null
     ) {
-        parent::__construct(['PUT'], $pattern, $middlewares, $groupFqcn);
+        parent::__construct(['PUT'], $pattern, $groupFqcn);
     }
 }

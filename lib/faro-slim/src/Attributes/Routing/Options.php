@@ -10,14 +10,12 @@ class Options extends Route
     /**
      * Options constructor.
      * @param string $pattern
-     * @param array $middlewares
      * @param string|null $groupFqcn
      */
     public function __construct(
         string $pattern,
-        array $middlewares = [],
         ?string $groupFqcn = null
     ) {
-        parent::__construct(['OPTIONS'], $pattern, $middlewares, $groupFqcn);
+        parent::__construct(['OPTIONS'], $pattern, $groupFqcn);
     }
 }

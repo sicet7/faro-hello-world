@@ -18,11 +18,6 @@ class Route
     private string $pattern;
 
     /**
-     * @var string[]
-     */
-    private array $middlewares;
-
-    /**
      * @var string|null
      */
     private ?string $groupFqcn;
@@ -31,18 +26,15 @@ class Route
      * Route constructor.
      * @param array $methods
      * @param string $pattern
-     * @param array $middlewares
      * @param string|null $groupFqcn
      */
     public function __construct(
         array $methods,
         string $pattern,
-        array $middlewares = [],
         ?string $groupFqcn = null
     ) {
         $this->methods = $methods;
         $this->pattern = $pattern;
-        $this->middlewares = $middlewares;
         $this->groupFqcn = $groupFqcn;
     }
 
@@ -60,14 +52,6 @@ class Route
     public function getPattern(): string
     {
         return $this->pattern;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
     }
 
     /**

@@ -1,8 +1,7 @@
 <?php
 
-namespace Server\Modules;
+namespace Server\App\Console;
 
-use Psr\Container\ContainerInterface;
 use Server\App\Console\Services\MigrationsService;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Config\Module as ConfigModule;
@@ -12,12 +11,16 @@ use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
 use Sicet7\Faro\Event\Module as EventModule;
 use Sicet7\Faro\ORM\Console\Module as ORMConsoleModule;
 
-use Sicet7\Faro\Swoole\Module as SwooleModule;
 use function DI\create;
 use function DI\get;
 
-class Console extends BaseModule implements HasListenersInterface
+class Module extends BaseModule implements HasListenersInterface
 {
+    /**
+     * @var bool
+     */
+    protected static bool $enableAttributeDefinitions = true;
+
     /**
      * @return string[]
      */
@@ -44,8 +47,8 @@ class Console extends BaseModule implements HasListenersInterface
     public static function getDefinitions(): array
     {
         return [
-            MigrationsService::class => create(MigrationsService::class)
-                ->constructor(get(Config::class)),
+//            MigrationsService::class => create(MigrationsService::class)
+//                ->constructor(get(Config::class)),
         ];
     }
 }

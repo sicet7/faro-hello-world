@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\Slim;
 
+use Sicet7\Faro\Slim\Attributes\Routing\Middleware;
 use Sicet7\Faro\Slim\Attributes\Routing\Route;
 use Sicet7\Faro\Slim\Exceptions\RouteException;
 use Sicet7\Faro\Slim\Interfaces\RouteGroupInterface;
@@ -49,12 +50,16 @@ class RouteLoader implements RouteLoaderInterface
         }
         $reflection = new \ReflectionClass($routeFqcn);
         $routingAttributes = [];
+        $middlewares = [];
 
         foreach ($reflection->getAttributes() as $attribute) {
             $instance = $attribute->newInstance();
             if ($instance instanceof Route) {
                 $this->validateGroup($instance);
                 $routingAttributes[] = $instance;
+            }
+            if ($instance instanceof Middleware) {
+                $middlewares[] = $instance->getMiddlewareFQCN();
             }
         }
 
@@ -73,7 +78,7 @@ class RouteLoader implements RouteLoaderInterface
                 'handler' => $routeFqcn,
                 'methods' => $routingAttribute->getMethods(),
                 'pattern' => $routingAttribute->getPattern(),
-                'middlewares' => $routingAttribute->getMiddlewares(),
+                'middlewares' => $middlewares,
             ];
         }
     }

@@ -98,15 +98,11 @@ abstract class GenericFactory implements GenericFactoryInterface
      */
     public static function getDefaultImplementationFactory(): callable
     {
-        return function (ContainerInterface $container, FactoryInterface $factory) {
-            $resolverChain = $factory->make(ResolverChain::class, [
-                'resolvers' => [
-                    0 => $factory->make(AssociativeArrayResolver::class),
-                    1 => $factory->make(TypeHintContainerResolver::class, [
-                        'container' => $container,
-                    ]),
-                    2 => $factory->make(DefaultValueResolver::class),
-                ],
+        return function (ContainerInterface $container) {
+            $resolverChain = new ResolverChain([
+                0 => new AssociativeArrayResolver(),
+                1 => new TypeHintContainerResolver($container),
+                2 => new DefaultValueResolver(),
             ]);
             return new class ($resolverChain) extends GenericFactory {
                 /**

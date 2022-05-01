@@ -21,7 +21,7 @@ class BaseModule
     {
         return ($fileName = $reflection->getFileName()) === false ?
             null :
-            basename($fileName);
+            dirname($fileName);
     }
 
     /**
@@ -54,7 +54,7 @@ class BaseModule
         $foundDefinitions = [];
         $foundClasses = PSR4::getFQCNs($namespace, $directory);
         foreach ($foundClasses as $class) {
-            if (!class_exists($class)) {
+            if (!class_exists($class) || is_subclass_of($class, self::class)) {
                 continue;
             }
             $reflection = new \ReflectionClass($class);

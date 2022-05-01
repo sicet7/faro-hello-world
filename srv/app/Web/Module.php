@@ -1,11 +1,12 @@
 <?php
 
-namespace Server\Modules;
+namespace Server\App\Web;
 
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
+use Server\App\Core\Module as Core;
 use Server\App\Core\Services\EnvironmentService;
 use Server\App\Web\Http\Middlewares\BodyParsingMiddleware as ResolvingBodyParsingMiddleware;
 use Server\App\Web\Providers\BodyParserProvider;
@@ -20,15 +21,20 @@ use Slim\Middleware\BodyParsingMiddleware as SlimBodyParsingMiddlewareAlias;
 use function DI\create;
 use function DI\get;
 
-class Web extends BaseModule implements HasRoutesInterface
+class Module extends BaseModule implements HasRoutesInterface
 {
+    /**
+     * @var bool
+     */
+    protected static bool $enableAttributeDefinitions = true;
+
     /**
      * @return array
      */
     public static function getDefinitions(): array
     {
         return [
-            BodyParserProvider::class => create(BodyParserProvider::class)
+            /*BodyParserProvider::class => create(BodyParserProvider::class)
                 ->constructor(get(ContainerInterface::class)),
             ResolvingBodyParsingMiddleware::class => function (
                 BodyParserProvider $bodyParserProvider,
@@ -45,7 +51,7 @@ class Web extends BaseModule implements HasRoutesInterface
                 }
                 return $middleware;
             },
-            SlimBodyParsingMiddlewareAlias::class => get(ResolvingBodyParsingMiddleware::class),
+            SlimBodyParsingMiddlewareAlias::class => get(ResolvingBodyParsingMiddleware::class),*/
         ];
     }
 
@@ -66,7 +72,7 @@ class Web extends BaseModule implements HasRoutesInterface
      */
     public static function getRoutes(): array
     {
-        return PSR4::getFQCNs('Server\\App\\Web\\Routes', dirname(__DIR__) . '/app/Web/Routes');
+        return PSR4::getFQCNs(__NAMESPACE__ . '\\Http\\Routes', __DIR__ . '/Http/Routes');
     }
 
     /**
@@ -81,7 +87,7 @@ class Web extends BaseModule implements HasRoutesInterface
         /** @var EnvironmentService $environment */
         $app = $container->get(App::class);
         $environment = $container->get(EnvironmentService::class);
-        $app->add($container->get(SlimBodyParsingMiddlewareAlias::class));
+//        $app->add($container->get(SlimBodyParsingMiddlewareAlias::class));
         $app->addRoutingMiddleware();
         $logger = (!$container->has(LoggerInterface::class) ? null : $container->get(LoggerInterface::class));
         $app->addErrorMiddleware(

@@ -3,8 +3,10 @@
 namespace Server\App\Console\Services;
 
 use Sicet7\Faro\Config\Config;
+use Sicet7\Faro\Core\Attributes\Definition;
 use Symfony\Component\Finder\Finder;
 
+#[Definition]
 class MigrationsService
 {
     /**

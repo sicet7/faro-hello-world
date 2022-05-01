@@ -9,7 +9,12 @@ use Invoker\ParameterResolver\DefaultValueResolver;
 use Invoker\ParameterResolver\ResolverChain;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Sicet7\Faro\Core\BaseModule;
 use Invoker\CallableResolver as PHPDICallableResolver;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
@@ -56,7 +61,12 @@ class Module extends BaseModule implements HasListenersInterface, BeforeBuildInt
             ApplicationFactoryInterface::class => create(ApplicationFactory::class)
                 ->constructor(get(ContainerInterface::class)),
             Psr17Factory::class => create(Psr17Factory::class),
+            RequestFactoryInterface::class => get(Psr17Factory::class),
             ResponseFactoryInterface::class => get(Psr17Factory::class),
+            ServerRequestFactoryInterface::class => get(Psr17Factory::class),
+            StreamFactoryInterface::class => get(Psr17Factory::class),
+            UploadedFileFactoryInterface::class => get(Psr17Factory::class),
+            UriFactoryInterface::class => get(Psr17Factory::class),
             RouteCollector::class  => create(RouteCollector::class)
                 ->constructor(
                     get(ResponseFactoryInterface::class),

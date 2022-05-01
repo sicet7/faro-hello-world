@@ -7,12 +7,12 @@ use Sicet7\Faro\Web\ModuleContainer as WebModuleContainer;
 
 ModuleRegistration::run([
     CoreModuleContainer::class => [
-        Server\Modules\Core::class,
+        Server\App\Core\Module::class,
     ],
     WebModuleContainer::class => [
-//        App\Web\Module::class,
+        Server\App\Web\Module::class,
     ],
     ConsoleModuleContainer::class => [
-        Server\Modules\Console::class
+        Server\App\Console\Module::class,
     ],
 ]);
