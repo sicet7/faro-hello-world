@@ -4,7 +4,6 @@ namespace Sicet7\Faro\Core\Factories;
 
 use DI\DependencyException;
 use DI\Factory\RequestedEntry;
-use DI\FactoryInterface;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
 use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
 use Invoker\ParameterResolver\DefaultValueResolver;
@@ -13,6 +12,9 @@ use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Interfaces\GenericFactoryInterface;
 
+/**
+ * @deprecated
+ */
 abstract class GenericFactory implements GenericFactoryInterface
 {
     /**

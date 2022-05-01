@@ -24,6 +24,16 @@ class Module extends BaseModule implements HasConfigInterface
     /**
      * @return array
      */
+    public static function getDefinitions(): array
+    {
+        return [
+
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function getConfigPaths(): array
     {
         return [

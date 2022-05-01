@@ -5,10 +5,15 @@ namespace Sicet7\Faro\Core;
 use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
+use Invoker\ParameterResolver\AssociativeArrayResolver;
+use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
+use Invoker\ParameterResolver\DefaultValueResolver;
+use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Sicet7\Faro\Core\Exception\ModuleException;
+use Sicet7\Faro\Core\Factories\DefaultFactory;
 use Sicet7\Faro\Core\Factories\GenericFactory;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\Interfaces\GenericFactoryInterface;
@@ -165,6 +170,13 @@ class ModuleContainer
                 $moduleList,
                 $definedObjects
             ),
+            DefaultFactory::class => function (ContainerInterface $container) {
+                return new DefaultFactory(new ResolverChain([
+                    0 => new AssociativeArrayResolver(),
+                    1 => new TypeHintContainerResolver($container),
+                    2 => new DefaultValueResolver(),
+                ]));
+            },
             GenericFactory::class => GenericFactory::getDefaultImplementationFactory(),
             GenericFactoryInterface::class => get(GenericFactory::class),
         ]);
