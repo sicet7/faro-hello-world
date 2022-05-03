@@ -21,12 +21,12 @@ use Slim\Middleware\BodyParsingMiddleware as SlimBodyParsingMiddlewareAlias;
 use function DI\create;
 use function DI\get;
 
-class Module extends BaseModule implements HasRoutesInterface
+class Module extends BaseModule
 {
     /**
      * @var bool
      */
-    protected static bool $enableAttributeDefinitions = true;
+    protected static bool $enableAttributeLoading = true;
 
     /**
      * @return array
@@ -70,10 +70,10 @@ class Module extends BaseModule implements HasRoutesInterface
     /**
      * @return array
      */
-    public static function getRoutes(): array
+    /*public static function getRoutes(): array
     {
         return PSR4::getFQCNs(__NAMESPACE__ . '\\Http\\Routes', __DIR__ . '/Http/Routes');
-    }
+    }*/
 
     /**
      * @param ContainerInterface $container

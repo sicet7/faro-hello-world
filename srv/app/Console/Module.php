@@ -19,7 +19,7 @@ class Module extends BaseModule implements HasListenersInterface
     /**
      * @var bool
      */
-    protected static bool $enableAttributeDefinitions = true;
+    protected static bool $enableAttributeLoading = true;
 
     /**
      * @return string[]

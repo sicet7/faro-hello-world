@@ -8,9 +8,4 @@ interface RouteGroupInterface
      * @return string
      */
     public static function getPattern(): string;
-
-    /**
-     * @return string[]
-     */
-    public static function getMiddlewares(): array;
 }

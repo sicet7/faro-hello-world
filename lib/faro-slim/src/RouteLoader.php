@@ -2,13 +2,16 @@
 
 namespace Sicet7\Faro\Slim;
 
+use DI\FactoryInterface;
 use Sicet7\Faro\Slim\Attributes\Routing\Middleware;
 use Sicet7\Faro\Slim\Attributes\Routing\Route;
 use Sicet7\Faro\Slim\Exceptions\RouteException;
 use Sicet7\Faro\Slim\Interfaces\RouteGroupInterface;
+use Slim\Interfaces\RouteGroupInterface as SlimRouteGroupInterface;
 use Sicet7\Faro\Slim\Interfaces\RouteLoaderInterface;
 use Slim\Interfaces\RouteCollectorInterface;
 use Slim\Interfaces\RouteCollectorProxyInterface;
+use Slim\Interfaces\RouteInterface;
 
 class RouteLoader implements RouteLoaderInterface
 {
@@ -28,12 +31,21 @@ class RouteLoader implements RouteLoaderInterface
     private RouteCollectorInterface $routeCollector;
 
     /**
+     * @var FactoryInterface
+     */
+    private FactoryInterface $factory;
+
+    /**
      * RouteLoader constructor.
      * @param RouteCollectorInterface $routeCollector
+     * @param FactoryInterface $factory
      */
-    public function __construct(RouteCollectorInterface $routeCollector)
-    {
+    public function __construct(
+        RouteCollectorInterface $routeCollector,
+        FactoryInterface $factory
+    ) {
         $this->routeCollector = $routeCollector;
+        $this->factory = $factory;
     }
 
     /**
@@ -50,16 +62,13 @@ class RouteLoader implements RouteLoaderInterface
         }
         $reflection = new \ReflectionClass($routeFqcn);
         $routingAttributes = [];
-        $middlewares = [];
+        $middlewares = $this->collectMiddlewares($reflection);
 
         foreach ($reflection->getAttributes() as $attribute) {
             $instance = $attribute->newInstance();
             if ($instance instanceof Route) {
                 $this->validateGroup($instance);
                 $routingAttributes[] = $instance;
-            }
-            if ($instance instanceof Middleware) {
-                $middlewares[] = $instance->getMiddlewareFQCN();
             }
         }
 
@@ -106,7 +115,7 @@ class RouteLoader implements RouteLoaderInterface
             } else {
                 /** @var RouteGroupInterface $groupFqcn */
                 $groupPattern = $groupFqcn::getPattern();
-                $groupMiddlewares = $groupFqcn::getMiddlewares();
+                $groupMiddlewares = $this->collectMiddlewares($groupFqcn);
                 $routeGroup = $this->routeCollector->group($groupPattern, function (
                     RouteCollectorProxyInterface $group
                 ) use ($routeList) {
@@ -121,9 +130,10 @@ class RouteLoader implements RouteLoaderInterface
                         }
                     }
                 });
-                foreach ($groupMiddlewares as $middleware) {
-                    $routeGroup->add($middleware);
-                }
+                $this->addMiddlewares($groupMiddlewares, $routeGroup);
+//                foreach ($groupMiddlewares as $middleware) {
+//                    $routeGroup->add($middleware);
+//                }
                 foreach ($routeList as $routeArray) {
                     if (!in_array($routeArray['handler'], $this->loadedRoutes)) {
                         $this->loadedRoutes[] = $routeArray['handler'];
@@ -144,6 +154,40 @@ class RouteLoader implements RouteLoaderInterface
         if ($group !== null && !is_subclass_of($group, RouteGroupInterface::class)) {
             throw new RouteException('Unknown Route Group: "' . $group . '"');
         }
+    }
+
+    /**
+     * @param Middleware[] $attributes
+     * @param SlimRouteGroupInterface|RouteInterface $target
+     * @return void
+     */
+    private function addMiddlewares(
+        array $attributes,
+        SlimRouteGroupInterface|RouteInterface $target
+    ): void {
+        foreach ($attributes as $attribute) {
+
+        }
+    }
+
+    /**
+     * @param string|\ReflectionClass $class
+     * @return Middleware[]
+     * @throws \ReflectionException
+     */
+    private function collectMiddlewares(string|\ReflectionClass $class): array
+    {
+        if (!($class instanceof \ReflectionClass)) {
+            $class = new \ReflectionClass($class);
+        }
+        $output = [];
+        foreach ($class->getAttributes(Middleware::class) as $attribute) {
+            $instance = $attribute->newInstance();
+            if ($instance instanceof Middleware) {
+                $output[] = $instance;
+            }
+        }
+        return $output;
     }
 
     /**

@@ -22,6 +22,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Sicet7\Faro\Config\Config;
 use Sicet7\Faro\Core\BaseModule;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
+use Sicet7\Faro\Core\Factories\DefaultFactory;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Event\Interfaces\ListenerProviderInterface;
 use Sicet7\Faro\ORM\Interfaces\EntityRepositoryInterface;
@@ -139,18 +140,6 @@ class Module extends BaseModule implements BeforeBuildInterface
                 $attributes = (new \ReflectionClass($entity))->getAttributes(Entity::class);
                 if (empty($attributes)) {
                     continue;
-                }
-                /** @var Entity $instance */
-                $instance = $attributes[array_key_first($attributes)]->newInstance();
-                if (
-                    $instance->repositoryClass !== null &&
-                    !$builderProxy->getModuleList()->isObjectDefined($instance->repositoryClass) &&
-                    is_subclass_of($instance->repositoryClass, EntityRepositoryInterface::class)
-                ) {
-                    $builderProxy->addDefinition(
-                        $instance->repositoryClass,
-                        factory([EntityRepositoryFactory::class, 'create'])
-                    );
                 }
                 $foundEntities[] = $entity;
             }

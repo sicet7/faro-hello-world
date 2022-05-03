@@ -2,6 +2,7 @@
 
 namespace Sicet7\Faro\Core;
 
+use DI\Container;
 use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
@@ -177,10 +178,9 @@ class ModuleContainer
                     2 => new DefaultValueResolver(),
                 ]));
             },
-            GenericFactory::class => GenericFactory::getDefaultImplementationFactory(),
-            GenericFactoryInterface::class => get(GenericFactory::class),
         ]);
 
+        /** @var Container $container */
         $container = $containerBuilder->build();
 
         $setupModules = [];
@@ -189,7 +189,9 @@ class ModuleContainer
                 $loadedModules,
                 $moduleFqcn,
                 function (string $moduleFqcn) use ($container) {
-                    $moduleFqcn::setup($container);
+                    if (method_exists($moduleFqcn, 'setup')) {
+                        $container->call([$moduleFqcn, 'setup']);
+                    }
                 },
                 $setupModules
             );

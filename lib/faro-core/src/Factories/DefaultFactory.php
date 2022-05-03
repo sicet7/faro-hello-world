@@ -41,7 +41,7 @@ final class DefaultFactory
             }
             $args = $this->parameterResolver->getParameters(
                 new \ReflectionMethod($entryName, '__construct'),
-                $parameters,
+                array_merge($factoryDefinition->getParameters(), $parameters),
                 []
             );
             ksort($args);

@@ -5,48 +5,26 @@ namespace Sicet7\Faro\Core;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Core\Attributes\Definition;
 use Sicet7\Faro\Core\Tools\PSR4;
+use Sicet7\Faro\Core\Tools\ClassReflection;
 
 class BaseModule
 {
     /**
      * @var bool
      */
-    protected static bool $enableAttributeDefinitions = false;
-
-    /**
-     * @param \ReflectionClass $reflection
-     * @return string|null
-     */
-    final protected static function getClassDirectory(\ReflectionClass $reflection): ?string
-    {
-        return ($fileName = $reflection->getFileName()) === false ?
-            null :
-            dirname($fileName);
-    }
-
-    /**
-     * @param \ReflectionClass $reflection
-     * @return string|null
-     */
-    final protected static function getClassNamespace(\ReflectionClass $reflection): ?string
-    {
-        if (!$reflection->inNamespace()) {
-            return null;
-        }
-        return $reflection->getNamespaceName();
-    }
+    protected static bool $enableAttributeLoading = false;
 
     /**
      * @return array
      */
     final public static function getAllDefinitions(): array
     {
-        if (!static::$enableAttributeDefinitions) {
+        if (!static::$enableAttributeLoading) {
             return static::getDefinitions();
         }
         $reflection = new \ReflectionClass(static::class);
-        $directory = static::getClassDirectory($reflection);
-        $namespace = static::getClassNamespace($reflection);
+        $directory = ClassReflection::getDirectory($reflection);
+        $namespace = ClassReflection::getNamespace($reflection);
         if ($directory === null || $namespace === null) {
             return static::getDefinitions();
         }
@@ -77,17 +55,6 @@ class BaseModule
     public static function getDefinitions(): array
     {
         return [];
-    }
-
-    /**
-     * Override this method to interact with the container right after it is created.
-     *
-     * @param ContainerInterface $container
-     * @return void
-     */
-    public static function setup(ContainerInterface $container): void
-    {
-        // Override this method to interact with the container right after it is created.
     }
 
     /**

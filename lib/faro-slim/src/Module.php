@@ -2,11 +2,8 @@
 
 namespace Sicet7\Faro\Slim;
 
-use DI\ContainerBuilder;
-use Invoker\ParameterResolver\AssociativeArrayResolver;
-use Invoker\ParameterResolver\Container\TypeHintContainerResolver;
-use Invoker\ParameterResolver\DefaultValueResolver;
-use Invoker\ParameterResolver\ResolverChain;
+use DI\FactoryInterface;
+use JetBrains\PhpStorm\ArrayShape;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -15,15 +12,28 @@ use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Psr\Log\LoggerInterface;
+use Sicet7\Faro\Core\Attributes\Definition;
 use Sicet7\Faro\Core\BaseModule;
 use Invoker\CallableResolver as PHPDICallableResolver;
 use Sicet7\Faro\Core\ContainerBuilderProxy;
+use Sicet7\Faro\Core\Factories\DefaultFactory;
 use Sicet7\Faro\Core\Interfaces\BeforeBuildInterface;
 use Sicet7\Faro\Core\ModuleList;
+use Sicet7\Faro\Core\Tools\PSR4;
+use Sicet7\Faro\Core\Tools\ClassReflection;
 use Sicet7\Faro\Event\Interfaces\HasListenersInterface;
+use Sicet7\Faro\Slim\Attributes\Routing\Any;
+use Sicet7\Faro\Slim\Attributes\Routing\Delete;
+use Sicet7\Faro\Slim\Attributes\Routing\Get;
+use Sicet7\Faro\Slim\Attributes\Routing\Middleware;
+use Sicet7\Faro\Slim\Attributes\Routing\Options;
+use Sicet7\Faro\Slim\Attributes\Routing\Patch;
+use Sicet7\Faro\Slim\Attributes\Routing\Post;
+use Sicet7\Faro\Slim\Attributes\Routing\Put;
+use Sicet7\Faro\Slim\Attributes\Routing\Route;
 use Sicet7\Faro\Slim\Factories\ControllerInvocationStrategyFactory;
 use Sicet7\Faro\Slim\Factories\ApplicationFactory;
-use Sicet7\Faro\Slim\Factories\RouteFactory;
 use Sicet7\Faro\Slim\Interfaces\ApplicationFactoryInterface;
 use Sicet7\Faro\Slim\Interfaces\ControllerInvocationStrategyFactoryInterface;
 use Sicet7\Faro\Slim\Interfaces\HasRoutesInterface;
@@ -41,6 +51,19 @@ use function DI\get;
 
 class Module extends BaseModule implements HasListenersInterface, BeforeBuildInterface
 {
+    private const ROUTE_ATTRIBUTES = [
+        Any::class,
+        Delete::class,
+        Get::class,
+        Options::class,
+        Patch::class,
+        Post::class,
+        Put::class,
+        Route::class,
+    ];
+
+    private const MIDDLEWARE_ATTRIBUTE = Middleware::class;
+
     /**
      * @return string[]
      */
@@ -84,20 +107,6 @@ class Module extends BaseModule implements HasListenersInterface, BeforeBuildInt
                 factory([ControllerInvocationStrategyFactoryInterface::class, 'create']),
             CallableResolverInterface::class => create(CallableResolver::class)
                 ->constructor(get(PHPDICallableResolver::class)),
-            RouteFactory::class => create(RouteFactory::class)
-                ->constructor(create(ResolverChain::class)
-                    ->constructor([
-                        create(AssociativeArrayResolver::class),
-                        create(TypeHintContainerResolver::class)
-                            ->constructor(get(ContainerInterface::class)),
-                        create(DefaultValueResolver::class),
-                    ]))->method('setClassWhitelist', get('loaded.routes')),
-            RouteLoader::class => create(RouteLoader::class)
-                ->constructor(get(RouteCollectorInterface::class)),
-            RouteLoaderInterface::class => get(RouteLoader::class),
-            'loaded.routes' => function (RouteLoaderInterface $routeLoader) {
-                return $routeLoader->getLoadedRoutes();
-            },
         ];
     }
 
@@ -113,20 +122,43 @@ class Module extends BaseModule implements HasListenersInterface, BeforeBuildInt
 
     /**
      * @param ContainerInterface $container
+     * @param RouteCollectorInterface $routeCollector
+     * @param LoggerInterface $logger
+     * @param FactoryInterface $factory
      * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \ReflectionException
      */
-    public static function setup(ContainerInterface $container): void
-    {
-        $moduleList = $container->get(ModuleList::class);
-        $routeLoader = $container->get(RouteLoaderInterface::class);
-        foreach ($moduleList->getLoadedModules() as $loadedModule) {
-            if (is_subclass_of($loadedModule, HasRoutesInterface::class)) {
-                foreach ($loadedModule::getRoutes() as $routeFqcn) {
-                    $routeLoader->registerRoute($routeFqcn);
+    public static function setup(
+        ContainerInterface $container,
+        RouteCollectorInterface $routeCollector,
+        LoggerInterface $logger,
+        FactoryInterface $factory
+    ): void {
+        /** @var string[] $foundRoutes */
+        $foundRoutes = $container->get('routes.found');
+        //TODO: finish implementing this.
+        $routeGroups = [];
+        foreach ($foundRoutes as $foundRoute) {
+            if (!class_exists($foundRoute) || !method_exists($foundRoute, '__invoke')) {
+                $logger->warning('Failed to resolve route "' . $foundRoute . '".');
+                continue;
+            }
+            $routeReflection = new \ReflectionClass($foundRoute);
+            $routeAttributes = ClassReflection::getAttributes($routeReflection, self::ROUTE_ATTRIBUTES);
+            $middlewareAttributes = ClassReflection::getAttributes($routeReflection, self::MIDDLEWARE_ATTRIBUTE);
+            foreach ($routeAttributes as $routeAttribute) {
+                $routeAttributeInstance = $routeAttribute->newInstance();
+                if (!($routeAttributeInstance instanceof Route)) {
+                    continue;
                 }
+                $routeGroups[$routeAttributeInstance->getGroupFqcn() ?? 0][] = [
+                    'route' => $routeAttributeInstance,
+                    'middleware' => $middlewareAttributes,
+                ];
             }
         }
-        $routeLoader->loadRoutes();
     }
 
     /**
@@ -135,12 +167,48 @@ class Module extends BaseModule implements HasListenersInterface, BeforeBuildInt
      */
     public static function beforeBuild(ContainerBuilderProxy $builderProxy): void
     {
-        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($builderProxy) {
-            if (is_subclass_of($moduleFqcn, HasRoutesInterface::class)) {
-                foreach ($moduleFqcn::getRoutes() as $routeFqcn) {
-                    $builderProxy->addDefinition($routeFqcn, factory([RouteFactory::class, 'create']));
+        $foundRoutes = [];
+        $builderProxy->runOnLoadedDependencyOrder(function (string $moduleFqcn) use ($builderProxy, &$foundRoutes) {
+            $class = new \ReflectionClass($moduleFqcn);
+            if (ClassReflection::readStaticProperty($class, 'enableAttributeLoading') !== true) {
+                return;
+            }
+            $moduleDirectory = ClassReflection::getDirectory($class);
+            $moduleNamespace = ClassReflection::getNamespace($class);
+            if ($moduleDirectory === null || $moduleNamespace === null) {
+                return;
+            }
+            $moduleClasses = PSR4::getFQCNs($moduleNamespace, $moduleDirectory);
+
+            foreach ($moduleClasses as $moduleClass) {
+                $moduleClassReflection = new \ReflectionClass($moduleClass);
+                if (!ClassReflection::hasAttribute($moduleClassReflection, self::ROUTE_ATTRIBUTES)) {
+                    continue;
                 }
+                if (
+                    !ClassReflection::hasAttribute($moduleClassReflection, Definition::class) &&
+                    !$builderProxy->getModuleList()->isObjectDefined($moduleClass)
+                ) {
+                    $builderProxy->addDefinition($moduleClass, factory([DefaultFactory::class, 'create']));
+                }
+                $foundRoutes[] = $moduleClass;
             }
         });
+        $builderProxy->addDefinition('routes.found', array_unique($foundRoutes));
+    }
+
+    /**
+     * @param Route $routeAttribute
+     * @param RouteCollectorInterface $routeCollector
+     * @param array $middlewareAttributes
+     * @return void
+     * @internal
+     */
+    public static function registerRoute(
+        Route $routeAttribute,
+        RouteCollectorInterface $routeCollector,
+        array $middlewareAttributes = []
+    ): void {
+
     }
 }

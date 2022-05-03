@@ -6,6 +6,7 @@ use DI\Definition\Helper\FactoryDefinitionHelper;
 use ReflectionException;
 use Sicet7\Faro\Core\Attributes\Name;
 use Sicet7\Faro\Core\Exception\ContainerException;
+use Sicet7\Faro\Core\Factories\DefaultFactory;
 use Symfony\Component\Console\Command\Command;
 
 use function DI\factory;
@@ -70,7 +71,10 @@ class CommandFactoryMapper
                 continue;
             }
             if (empty($definitions)) {
-                $definitions[$fqcn] = factory([CommandFactory::class, 'create'])
+                /*if (str_contains($fqcn, 'StartCommand')) {
+                    dd($commandAlias);
+                }*/
+                $definitions[$fqcn] = factory([DefaultFactory::class, 'create'])
                     ->parameter('name', $commandAlias);
             }
             $this->commandMap[$commandAlias] = $fqcn;
